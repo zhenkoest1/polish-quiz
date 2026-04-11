@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Quiz: Społeczeństwo zmęczenia — Lekcja 2</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #1a1a2e;
+  --card: #16213e;
+  --card-hover: #1a2745;
+  --text: #e8e8e8;
+  --text-dim: #8899aa;
+  --accent: #fdcb6e;
+  --correct: #00b894;
+  --incorrect: #e17055;
+  --correct-bg: rgba(0, 184, 148, 0.15);
+  --incorrect-bg: rgba(225, 112, 85, 0.15);
+  --progress-bg: #0f3460;
+  --border: rgba(255,255,255,0.06);
+  --shadow: 0 4px 24px rgba(0,0,0,0.3);
+  --radius: 12px;
+}
+
+html { font-size: 16px; }
+
+body {
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100dvh;
+  line-height: 1.5;
+  -webkit-tap-highlight-color: transparent;
+  overflow-x: hidden;
+}
+
+/* Progress bar */
+.progress-container {
+  position: fixed; top: 0; left: 0; right: 0;
+  height: 4px; background: var(--progress-bg); z-index: 100;
+}
+.progress-bar {
+  height: 100%; background: var(--accent);
+  transition: width 0.4s ease; width: 0%;
+}
+
+/* Timer */
+.timer {
+  position: fixed; top: 8px; right: 12px; z-index: 101;
+  font-size: 0.8rem; color: var(--text-dim);
+  background: rgba(22, 33, 62, 0.9); padding: 4px 10px;
+  border-radius: 20px; backdrop-filter: blur(4px);
+}
+
+/* Main container */
+.container {
+  max-width: 540px; margin: 0 auto;
+  padding: 24px 16px 40px; min-height: 100dvh;
+}
+
+/* Screens */
+.screen { display: none; animation: fadeIn 0.35s ease; }
+.screen.active { display: block; }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Welcome */
+.welcome { text-align: center; padding-top: 15vh; }
+.welcome h1 { font-size: 1.8rem; margin-bottom: 8px; }
+.welcome .subtitle { color: var(--accent); font-size: 1.05rem; margin-bottom: 24px; }
+.welcome .desc { color: var(--text-dim); font-size: 0.95rem; margin-bottom: 32px; line-height: 1.6; }
+.welcome .time-hint { color: var(--text-dim); font-size: 0.85rem; margin-bottom: 28px; }
+
+/* Buttons */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: 14px 32px; border: none; border-radius: var(--radius);
+  font-size: 1.05rem; font-weight: 600; cursor: pointer;
+  transition: all 0.2s ease; min-height: 48px;
+  -webkit-user-select: none; user-select: none;
+}
+.btn-primary {
+  background: var(--accent); color: #1a1a2e;
+}
+.btn-primary:active { transform: scale(0.97); filter: brightness(0.9); }
+.btn-next {
+  background: var(--accent); color: #1a1a2e;
+  width: 100%; margin-top: 16px;
+}
+.btn-next:disabled {
+  background: #3a3a5e; color: #666; cursor: not-allowed;
+}
+.btn-tf {
+  flex: 1; padding: 14px 20px; border: 2px solid var(--border);
+  background: var(--card); color: var(--text); border-radius: var(--radius);
+  font-size: 1rem; font-weight: 600; cursor: pointer;
+  transition: all 0.2s ease; min-height: 52px;
+}
+.btn-tf:active { transform: scale(0.97); }
+.btn-tf.selected-correct {
+  border-color: var(--correct); background: var(--correct-bg); color: var(--correct);
+}
+.btn-tf.selected-incorrect {
+  border-color: var(--incorrect); background: var(--incorrect-bg); color: var(--incorrect);
+}
+.btn-tf.reveal-correct {
+  border-color: var(--correct); background: var(--correct-bg); color: var(--correct);
+}
+.btn-tf:disabled { cursor: not-allowed; opacity: 0.7; }
+
+/* Section header */
+.section-header {
+  text-align: center; padding: 32px 0 20px;
+}
+.section-header .emoji { font-size: 2rem; margin-bottom: 8px; }
+.section-header h2 { font-size: 1.3rem; color: var(--accent); margin-bottom: 4px; }
+.section-header .section-desc { color: var(--text-dim); font-size: 0.88rem; }
+.section-header .section-count {
+  display: inline-block; margin-top: 10px; padding: 4px 14px;
+  background: rgba(253,203,110,0.1); border-radius: 20px;
+  font-size: 0.8rem; color: var(--accent);
+}
+
+/* Question card */
+.question-card {
+  background: var(--card); border-radius: var(--radius);
+  padding: 24px 20px; box-shadow: var(--shadow);
+  border: 1px solid var(--border);
+}
+.q-counter {
+  font-size: 0.8rem; color: var(--text-dim); margin-bottom: 12px;
+}
+.q-prompt {
+  font-size: 1.15rem; font-weight: 600; margin-bottom: 20px; line-height: 1.45;
+}
+.q-prompt .highlight {
+  color: var(--accent); background: rgba(253,203,110,0.1);
+  padding: 2px 6px; border-radius: 4px;
+}
+.q-prompt .gap {
+  display: inline-block; min-width: 100px; border-bottom: 2px dashed var(--accent);
+  margin: 0 2px;
+}
+
+/* Multiple choice options */
+.options { display: flex; flex-direction: column; gap: 10px; }
+.option {
+  display: block; width: 100%; padding: 14px 16px;
+  background: rgba(255,255,255,0.03); border: 2px solid var(--border);
+  border-radius: var(--radius); color: var(--text);
+  font-size: 1rem; text-align: left; cursor: pointer;
+  transition: all 0.2s ease; min-height: 48px;
+  -webkit-user-select: none; user-select: none;
+}
+.option:active { transform: scale(0.98); }
+.option.selected-correct {
+  border-color: var(--correct); background: var(--correct-bg);
+  color: var(--correct); font-weight: 600;
+}
+.option.selected-incorrect {
+  border-color: var(--incorrect); background: var(--incorrect-bg);
+  color: var(--incorrect);
+  animation: shake 0.4s ease;
+}
+.option.reveal-correct {
+  border-color: var(--correct); background: var(--correct-bg);
+  color: var(--correct); font-weight: 600;
+}
+.option:disabled { cursor: not-allowed; }
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-6px); }
+  40% { transform: translateX(6px); }
+  60% { transform: translateX(-4px); }
+  80% { transform: translateX(4px); }
+}
+
+/* Correct flash */
+@keyframes correctFlash {
+  0% { box-shadow: 0 0 0 0 rgba(0,184,148,0.4); }
+  50% { box-shadow: 0 0 20px 4px rgba(0,184,148,0.2); }
+  100% { box-shadow: 0 0 0 0 rgba(0,184,148,0); }
+}
+.flash-correct { animation: correctFlash 0.6s ease; }
+
+/* Type-in input */
+.type-in-wrapper { margin-top: 4px; }
+.type-in {
+  width: 100%; padding: 14px 16px;
+  background: rgba(255,255,255,0.05); border: 2px solid var(--border);
+  border-radius: var(--radius); color: var(--text);
+  font-size: 1.05rem; outline: none;
+  transition: border-color 0.2s;
+}
+.type-in:focus { border-color: var(--accent); }
+.type-in.correct { border-color: var(--correct); background: var(--correct-bg); }
+.type-in.incorrect { border-color: var(--incorrect); background: var(--incorrect-bg); }
+.type-in:disabled { opacity: 0.7; }
+
+.btn-check {
+  width: 100%; margin-top: 10px; padding: 14px;
+  background: var(--accent); color: #1a1a2e; border: none;
+  border-radius: var(--radius); font-size: 1rem; font-weight: 600;
+  cursor: pointer; min-height: 48px;
+}
+.btn-check:active { transform: scale(0.97); }
+
+/* Feedback */
+.feedback {
+  margin-top: 14px; padding: 12px 16px;
+  border-radius: var(--radius); font-size: 0.9rem; line-height: 1.5;
+  display: none;
+}
+.feedback.show { display: block; animation: fadeIn 0.3s ease; }
+.feedback.correct-fb {
+  background: var(--correct-bg); border-left: 3px solid var(--correct); color: var(--correct);
+}
+.feedback.incorrect-fb {
+  background: var(--incorrect-bg); border-left: 3px solid var(--incorrect); color: #f0a090;
+}
+
+/* True/False buttons row */
+.tf-row { display: flex; gap: 12px; }
+
+/* Results */
+.results { text-align: center; padding-top: 8vh; }
+.results .grade-emoji { font-size: 3.5rem; margin-bottom: 12px; }
+.results .grade-label { font-size: 1.5rem; font-weight: 700; margin-bottom: 4px; }
+.results .score-main {
+  font-size: 2.2rem; font-weight: 800; color: var(--accent); margin: 12px 0;
+}
+.results .score-pct { font-size: 1rem; color: var(--text-dim); margin-bottom: 28px; }
+
+.section-scores {
+  text-align: left; background: var(--card); border-radius: var(--radius);
+  padding: 20px; margin-bottom: 24px; box-shadow: var(--shadow);
+  border: 1px solid var(--border);
+}
+.section-scores h3 { font-size: 1rem; margin-bottom: 14px; color: var(--accent); }
+.section-score-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 8px 0; border-bottom: 1px solid var(--border);
+  font-size: 0.9rem;
+}
+.section-score-row:last-child { border-bottom: none; }
+.section-score-row .name { flex: 1; }
+.section-score-row .score {
+  font-weight: 700; min-width: 60px; text-align: right;
+}
+.section-score-bar {
+  width: 60px; height: 6px; background: var(--progress-bg);
+  border-radius: 3px; margin-left: 10px; overflow: hidden;
+}
+.section-score-fill {
+  height: 100%; border-radius: 3px;
+  transition: width 0.6s ease;
+}
+
+.results-buttons { display: flex; flex-direction: column; gap: 12px; margin-top: 20px; }
+.btn-share {
+  background: transparent; border: 2px solid var(--accent);
+  color: var(--accent); width: 100%; padding: 14px;
+  border-radius: var(--radius); font-size: 1rem; font-weight: 600;
+  cursor: pointer; min-height: 48px;
+}
+.btn-share:active { transform: scale(0.97); }
+.btn-restart {
+  background: var(--card); border: 2px solid var(--border);
+  color: var(--text); width: 100%; padding: 14px;
+  border-radius: var(--radius); font-size: 1rem; font-weight: 600;
+  cursor: pointer; min-height: 48px;
+}
+.btn-restart:active { transform: scale(0.97); }
+
+.copied-toast {
+  position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+  background: var(--correct); color: #fff; padding: 10px 24px;
+  border-radius: 24px; font-size: 0.9rem; font-weight: 600;
+  opacity: 0; transition: opacity 0.3s; z-index: 200;
+  pointer-events: none;
+}
+.copied-toast.show { opacity: 1; }
+
+.elapsed {
+  color: var(--text-dim); font-size: 0.85rem; margin-bottom: 20px;
+}
+</style>
+</head>
+<body>
+
+<div class="progress-container"><div class="progress-bar" id="progressBar"></div></div>
+<div class="timer" id="timer" style="display:none;">00:00</div>
+<div class="copied-toast" id="copiedToast">Skopiowano!</div>
+
+<div class="container" id="app">
+
+  <!-- Welcome -->
+  <div class="screen active" id="welcomeScreen">
+    <div class="welcome">
+      <h1>&#x1F9E0; Quiz: Społeczeństwo zmęczenia</h1>
+      <div class="subtitle">Lekcja 2 — powtórka i sprawdzian</div>
+      <div class="desc">
+        62 pytania z ośmiu kategorii:<br>
+        słówka, definicje, biernik, dopełniacz, zdania i filozofia Hana.
+      </div>
+      <div class="time-hint">&#x23F1;&#xFE0F; Szacowany czas: ~25 min</div>
+      <button class="btn btn-primary" onclick="startQuiz()">Zaczynamy!</button>
+    </div>
+  </div>
+
+  <!-- Quiz area (filled dynamically) -->
+  <div class="screen" id="quizScreen"></div>
+
+  <!-- Results -->
+  <div class="screen" id="resultsScreen"></div>
+
+</div>
+
+<script>
+// ===== DATA =====
+
+const sections = [
+  {
+    id: 's1', emoji: '&#x1F1F5;&#x1F1F1;&#x27A1;&#xFE0F;&#x1F1EC;&#x1F1E7;', title: 'Słówka PL → EN',
+    desc: 'Wybierz poprawne tłumaczenie na angielski', type: 'mc', count: 10,
+    questions: shuffle([
+      { q: 'zmęczenie', answer: 'tiredness / fatigue', options: ['tiredness / fatigue', 'laziness', 'anxiety', 'weakness'] },
+      { q: 'wypalenie', answer: 'burnout', options: ['burnout', 'punishment', 'progress', 'competition'] },
+      { q: 'społeczeństwo', answer: 'society', options: ['society', 'discipline', 'obedience', 'silence'] },
+      { q: 'osiągnięcie', answer: 'achievement', options: ['achievement', 'creativity', 'reward', 'happiness'] },
+      { q: 'pułapka', answer: 'trap', options: ['trap', 'progress', 'reward', 'competition'] },
+      { q: 'samoeksploatacja', answer: 'self-exploitation', options: ['self-exploitation', 'discipline', 'punishment', 'laziness'] },
+      { q: 'więzienie', answer: 'prison', options: ['prison', 'silence', 'weakness', 'obedience'] },
+      { q: 'produktywność', answer: 'productivity', options: ['productivity', 'creativity', 'happiness', 'anxiety'] },
+      { q: 'odwaga', answer: 'courage', options: ['courage', 'laziness', 'silence', 'competition'] },
+      { q: 'kontemplacja', answer: 'contemplation', options: ['contemplation', 'discipline', 'reward', 'progress'] },
+      { q: 'zakaz', answer: 'prohibition', options: ['prohibition', 'punishment', 'weakness', 'happiness'] },
+      { q: 'wolność', answer: 'freedom', options: ['freedom', 'obedience', 'anxiety', 'silence'] },
+      { q: 'nuda', answer: 'boredom', options: ['boredom', 'laziness', 'creativity', 'competition'] },
+      { q: 'odpoczynek', answer: 'rest', options: ['rest', 'reward', 'progress', 'discipline'] },
+    ]).slice(0, 10)
+  },
+  {
+    id: 's2', emoji: '&#x1F1EC;&#x1F1E7;&#x27A1;&#xFE0F;&#x1F1F5;&#x1F1F1;', title: 'Słówka EN → PL',
+    desc: 'Wybierz poprawne tłumaczenie na polski', type: 'mc', count: 8,
+    questions: shuffle([
+      { q: 'advertisement', answer: 'reklama', options: ['reklama', 'relacja', 'recepta', 'reakcja'] },
+      { q: 'app', answer: 'aplikacja', options: ['aplikacja', 'atrakcja', 'akceptacja', 'adaptacja'] },
+      { q: 'philosopher', answer: 'filozof', options: ['filozof', 'filolog', 'filantrop', 'fizyk'] },
+      { q: 'boredom', answer: 'nuda', options: ['nuda', 'nuta', 'nowa', 'nauka'] },
+      { q: 'rest', answer: 'odpoczynek', options: ['odpoczynek', 'odporność', 'odpowiedź', 'odkrycie'] },
+      { q: 'freedom', answer: 'wolność', options: ['wolność', 'własność', 'wdzięczność', 'ważność'] },
+      { q: 'ban / prohibition', answer: 'zakaz', options: ['zakaz', 'zakon', 'zakres', 'zamek'] },
+      { q: 'courage', answer: 'odwaga', options: ['odwaga', 'odmowa', 'odraza', 'odpłata'] },
+    ]).slice(0, 8)
+  },
+  {
+    id: 's3', emoji: '&#x1F4D6;', title: 'Definicje po polsku',
+    desc: 'Wybierz słowo pasujące do definicji', type: 'mc', count: 8,
+    questions: shuffle([
+      { q: 'Choroba od zbyt dużo pracy — nie mogę już więcej', answer: 'wypalenie', options: ['wypalenie', 'zmęczenie', 'depresja', 'frustracja'] },
+      { q: 'Sytuacja, gdy sam się zmuszasz do pracy', answer: 'samoeksploatacja', options: ['samoeksploatacja', 'produktywność', 'ambicja', 'samodyscyplina'] },
+      { q: 'Kiedy ktoś mówi: nie wolno!', answer: 'zakaz', options: ['zakaz', 'kara', 'zasada', 'przepis'] },
+      { q: 'Spokojne myślenie bez celu i wyniku', answer: 'kontemplacja', options: ['kontemplacja', 'medytacja', 'koncentracja', 'kalkulacja'] },
+      { q: 'Coś, co wygląda dobrze, ale jest niebezpieczne', answer: 'pułapka', options: ['pułapka', 'nagroda', 'okazja', 'szansa'] },
+      { q: 'Miejsce, z którego nie możesz wyjść', answer: 'więzienie', options: ['więzienie', 'schronisko', 'mieszkanie', 'biuro'] },
+      { q: 'Gotowość do trudnych decyzji', answer: 'odwaga', options: ['odwaga', 'ambicja', 'determinacja', 'pewność'] },
+      { q: 'Stan, z którego rodzi się kreatywność', answer: 'nuda', options: ['nuda', 'złość', 'radość', 'stres'] },
+    ]).slice(0, 8)
+  },
+  {
+    id: 's4', emoji: '&#x270D;&#xFE0F;', title: 'Biernik — rzeczowniki',
+    desc: 'Wpisz biernik podanego rzeczownika', type: 'typein', count: 8,
+    questions: shuffle([
+      { q: 'telefon', answer: 'telefon', hint: 'Rzecz. męski nieżywotny → biernik = mianownik' },
+      { q: 'firma', answer: 'firmę', hint: 'Rzecz. żeński (-a → -ę)' },
+      { q: 'wróg', answer: 'wroga', hint: 'Rzecz. męski żywotny → biernik = dopełniacz (-a)' },
+      { q: 'książka', answer: 'książkę', hint: 'Rzecz. żeński (-a → -ę)' },
+      { q: 'zmęczenie', answer: 'zmęczenie', hint: 'Rzecz. nijaki → biernik = mianownik' },
+      { q: 'aplikacja', answer: 'aplikację', hint: 'Rzecz. żeński (-a → -ę)' },
+      { q: 'szef', answer: 'szefa', hint: 'Rzecz. męski żywotny → biernik = dopełniacz (-a)' },
+      { q: 'kariera', answer: 'karierę', hint: 'Rzecz. żeński (-a → -ę)' },
+    ]).slice(0, 8)
+  },
+  {
+    id: 's5', emoji: '&#x1F9E9;', title: 'Biernik z przymiotnikiem',
+    desc: 'Wpisz poprawną formę w bierniku', type: 'typein_sentence', count: 6,
+    questions: shuffle([
+      { q: 'Mam __________ (surowy szef)', answer: 'surowego szefa', hint: 'Męski żywotny → przymiotnik -ego + rzecz. -a' },
+      { q: 'Kupuję __________ (nowa aplikacja)', answer: 'nową aplikację', hint: 'Żeński → przymiotnik -ą + rzecz. -ę' },
+      { q: 'Czytam __________ (interesująca książka)', answer: 'interesującą książkę', hint: 'Żeński → przymiotnik -ą + rzecz. -ę' },
+      { q: 'Robię __________ (kolejny trening)', answer: 'kolejny trening', hint: 'Męski nieżywotny → biernik = mianownik' },
+      { q: 'Widzę __________ (stary dom)', answer: 'stary dom', hint: 'Męski nieżywotny → biernik = mianownik' },
+      { q: 'Proponuję __________ (proste rozwiązanie)', answer: 'proste rozwiązanie', hint: 'Nijaki → biernik = mianownik' },
+    ]).slice(0, 6)
+  },
+  {
+    id: 's6', emoji: '&#x26D4;', title: 'Negacja → Dopełniacz',
+    desc: 'Wpisz brakujące słowo w dopełniaczu', type: 'typein_sentence', count: 6,
+    questions: shuffle([
+      { q: 'Mam sukces → Nie mam __________', answer: 'sukcesu', hint: 'Męski → dopełniacz -u' },
+      { q: 'Widzę problem → Nie widzę __________', answer: 'problemu', hint: 'Męski → dopełniacz -u' },
+      { q: 'Czuję radość → Nie czuję __________', answer: 'radości', hint: 'Żeński (-ść → -ści)' },
+      { q: 'Mam czas → Nie mam __________', answer: 'czasu', hint: 'Męski → dopełniacz -u' },
+      { q: 'Widzę rozwiązanie → Nie widzę __________', answer: 'rozwiązania', hint: 'Nijaki (-ie → -ia)' },
+      { q: 'Mam telefon → Nie mam __________', answer: 'telefonu', hint: 'Męski → dopełniacz -u' },
+    ]).slice(0, 6)
+  },
+  {
+    id: 's7', emoji: '&#x1F4AC;', title: 'Uzupełnij zdanie',
+    desc: 'Wybierz słowo pasujące do kontekstu lekcji', type: 'mc', count: 8,
+    questions: [
+      { q: 'Han opisuje __________ świat.', answer: 'nowoczesny', options: ['nowoczesny', 'stary', 'mały', 'duży'] },
+      { q: 'Dawniej ludzie żyli w społeczeństwie __________.', answer: 'dyscypliny', options: ['dyscypliny', 'osiągnięć', 'zmęczenia', 'wolności'] },
+      { q: 'Dzisiaj żyjemy w społeczeństwie __________.', answer: 'osiągnięć', options: ['osiągnięć', 'dyscypliny', 'zakazów', 'wolności'] },
+      { q: 'Han nazywa to __________.', answer: 'samoeksploatacją', options: ['samoeksploatacją', 'wolnością', 'odwagą', 'nudą'] },
+      { q: 'Wypalenie to nie jest __________.', answer: 'słabość', options: ['słabość', 'choroba', 'problem', 'zmęczenie'] },
+      { q: 'Prawdziwy __________ nie ma celu.', answer: 'odpoczynek', options: ['odpoczynek', 'trening', 'projekt', 'plan'] },
+      { q: 'Nie robić nic to akt __________.', answer: 'odwagi', options: ['odwagi', 'słabości', 'zmęczenia', 'nudy'] },
+      { q: 'Człowiek nosi swoje __________ ze sobą — w głowie.', answer: 'więzienie', options: ['więzienie', 'telefon', 'zmęczenie', 'odpoczynek'] },
+    ]
+  },
+  {
+    id: 's8', emoji: '&#x1F9D0;', title: 'Filozofia Hana — Prawda czy Fałsz',
+    desc: 'Oceń, czy zdanie jest prawdziwe', type: 'tf', count: 8,
+    questions: shuffle([
+      { q: 'Han urodził się w Niemczech.', answer: false, explanation: 'Han urodził się w Korei Południowej.' },
+      { q: 'W społeczeństwie dyscypliny ludzie mogli protestować.', answer: true, explanation: 'Tak — kiedy wróg jest na zewnątrz, można walczyć.' },
+      { q: 'Samoeksploatacja to kiedy szef zmusza cię do pracy.', answer: false, explanation: 'Samoeksploatacja = sam siebie zmuszasz do pracy.' },
+      { q: 'Wypalenie to choroba słabych ludzi.', answer: false, explanation: 'To choroba systemu, nie osoby.' },
+      { q: 'Han proponuje odpoczynek, żeby potem lepiej pracować.', answer: false, explanation: 'Han mówi o odpoczynku BEZ celu — nie dla produktywności.' },
+      { q: 'Kontemplacja to spokojne myślenie bez celu.', answer: true, explanation: 'Dokładnie — myślenie bez wyniku i presji.' },
+      { q: 'W społeczeństwie osiągnięć winisz siebie za brak sukcesu.', answer: true, explanation: 'Tak — nie ma zewnętrznego wroga, więc winisz siebie.' },
+      { q: 'Han pisze po koreańsku.', answer: false, explanation: 'Han pisze po niemiecku.' },
+    ]).slice(0, 8)
+  }
+];
+
+// ===== STATE =====
+let currentSection = 0;
+let currentQuestion = 0;
+let sectionScores = [];
+let totalCorrect = 0;
+let totalQuestions = 0;
+let startTime = null;
+let timerInterval = null;
+let answered = false;
+let allQuestions = [];
+let flatIndex = 0;
+
+// ===== HELPERS =====
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function normalize(s) {
+  return s.trim().toLowerCase();
+}
+
+function getTotalQ() {
+  return sections.reduce((s, sec) => s + sec.questions.length, 0);
+}
+
+function updateProgress() {
+  const total = getTotalQ();
+  const pct = (flatIndex / total) * 100;
+  document.getElementById('progressBar').style.width = pct + '%';
+}
+
+function startTimer() {
+  startTime = Date.now();
+  const el = document.getElementById('timer');
+  el.style.display = 'block';
+  timerInterval = setInterval(() => {
+    const diff = Date.now() - startTime;
+    const m = Math.floor(diff / 60000);
+    const s = Math.floor((diff % 60000) / 1000);
+    el.textContent = String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+  }, 1000);
+}
+
+function stopTimer() {
+  clearInterval(timerInterval);
+}
+
+function getElapsed() {
+  if (!startTime) return '00:00';
+  const diff = Date.now() - startTime;
+  const m = Math.floor(diff / 60000);
+  const s = Math.floor((diff % 60000) / 1000);
+  return String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+}
+
+// ===== QUIZ ENGINE =====
+
+function startQuiz() {
+  // Shuffle options for MC questions
+  sections.forEach(sec => {
+    if (sec.type === 'mc') {
+      sec.questions.forEach(q => { q.options = shuffle(q.options); });
+    }
+  });
+
+  currentSection = 0;
+  currentQuestion = 0;
+  sectionScores = sections.map(() => ({ correct: 0, total: 0 }));
+  totalCorrect = 0;
+  flatIndex = 0;
+  totalQuestions = getTotalQ();
+  answered = false;
+
+  document.getElementById('welcomeScreen').classList.remove('active');
+  document.getElementById('quizScreen').classList.add('active');
+  startTimer();
+  renderSectionIntro();
+}
+
+function renderSectionIntro() {
+  const sec = sections[currentSection];
+  const area = document.getElementById('quizScreen');
+  area.innerHTML = `
+    <div class="section-header">
+      <div class="emoji">${sec.emoji}</div>
+      <h2>${sec.title}</h2>
+      <div class="section-desc">${sec.desc}</div>
+      <div class="section-count">Sekcja ${currentSection + 1} / ${sections.length} — ${sec.questions.length} pytań</div>
+    </div>
+    <button class="btn btn-next" onclick="renderQuestion()" style="margin-top:20px;">Start &#x27A1;&#xFE0F;</button>
+  `;
+  updateProgress();
+}
+
+function renderQuestion() {
+  const sec = sections[currentSection];
+  const q = sec.questions[currentQuestion];
+  answered = false;
+  const area = document.getElementById('quizScreen');
+  const qNum = currentQuestion + 1;
+  const qTotal = sec.questions.length;
+
+  if (sec.type === 'mc') {
+    renderMC(area, sec, q, qNum, qTotal);
+  } else if (sec.type === 'typein') {
+    renderTypeIn(area, sec, q, qNum, qTotal);
+  } else if (sec.type === 'typein_sentence') {
+    renderTypeInSentence(area, sec, q, qNum, qTotal);
+  } else if (sec.type === 'tf') {
+    renderTF(area, sec, q, qNum, qTotal);
+  }
+  updateProgress();
+}
+
+function renderMC(area, sec, q, qNum, qTotal) {
+  let promptHTML;
+  if (sec.id === 's1' || sec.id === 's2') {
+    promptHTML = `<span class="highlight">${q.q}</span>`;
+  } else if (sec.id === 's7') {
+    promptHTML = q.q.replace('__________', '<span class="gap">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>');
+  } else {
+    promptHTML = `&#x00AB;${q.q}&#x00BB;`;
+  }
+
+  const optionsHTML = q.options.map((opt, i) =>
+    `<button class="option" data-idx="${i}" onclick="selectMC(this, '${escapeAttr(opt)}', '${escapeAttr(q.answer)}')">${opt}</button>`
+  ).join('');
+
+  area.innerHTML = `
+    <div class="section-header" style="padding-top:16px;padding-bottom:10px;">
+      <h2 style="font-size:1rem;">${sec.emoji} ${sec.title}</h2>
+    </div>
+    <div class="question-card">
+      <div class="q-counter">Pytanie ${qNum} / ${qTotal}</div>
+      <div class="q-prompt">${promptHTML}</div>
+      <div class="options">${optionsHTML}</div>
+      <div class="feedback" id="feedback"></div>
+    </div>
+    <button class="btn btn-next" id="btnNext" disabled onclick="nextQuestion()">Dalej &#x27A1;&#xFE0F;</button>
+  `;
+}
+
+function escapeAttr(s) {
+  return s.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+}
+
+function selectMC(btn, selected, correct) {
+  if (answered) return;
+  answered = true;
+  const options = document.querySelectorAll('.option');
+  options.forEach(o => o.disabled = true);
+
+  const isCorrect = selected === correct;
+  if (isCorrect) {
+    btn.classList.add('selected-correct');
+    btn.closest('.question-card').classList.add('flash-correct');
+    showFeedback(true, '');
+    recordAnswer(true);
+  } else {
+    btn.classList.add('selected-incorrect');
+    options.forEach(o => {
+      if (o.textContent === correct) o.classList.add('reveal-correct');
+    });
+    showFeedback(false, `Poprawna odpowiedź: <strong>${correct}</strong>`);
+    recordAnswer(false);
+  }
+  document.getElementById('btnNext').disabled = false;
+}
+
+function renderTypeIn(area, sec, q, qNum, qTotal) {
+  area.innerHTML = `
+    <div class="section-header" style="padding-top:16px;padding-bottom:10px;">
+      <h2 style="font-size:1rem;">${sec.emoji} ${sec.title}</h2>
+    </div>
+    <div class="question-card">
+      <div class="q-counter">Pytanie ${qNum} / ${qTotal}</div>
+      <div class="q-prompt">Wpisz biernik od: <span class="highlight">${q.q}</span></div>
+      <div class="type-in-wrapper">
+        <input type="text" class="type-in" id="typeInput" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Twoja odpowiedź...">
+        <button class="btn-check" id="btnCheck" onclick="checkTypeIn('${escapeAttr(q.answer)}', '${escapeAttr(q.hint)}')">Sprawdź</button>
+      </div>
+      <div class="feedback" id="feedback"></div>
+    </div>
+    <button class="btn btn-next" id="btnNext" disabled onclick="nextQuestion()">Dalej &#x27A1;&#xFE0F;</button>
+  `;
+  const input = document.getElementById('typeInput');
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !answered) {
+      document.getElementById('btnCheck').click();
+    }
+  });
+  input.focus();
+}
+
+function renderTypeInSentence(area, sec, q, qNum, qTotal) {
+  const promptHTML = q.q.replace('__________', '<span class="gap">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>');
+  area.innerHTML = `
+    <div class="section-header" style="padding-top:16px;padding-bottom:10px;">
+      <h2 style="font-size:1rem;">${sec.emoji} ${sec.title}</h2>
+    </div>
+    <div class="question-card">
+      <div class="q-counter">Pytanie ${qNum} / ${qTotal}</div>
+      <div class="q-prompt">${promptHTML}</div>
+      <div class="type-in-wrapper">
+        <input type="text" class="type-in" id="typeInput" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Twoja odpowiedź...">
+        <button class="btn-check" id="btnCheck" onclick="checkTypeIn('${escapeAttr(q.answer)}', '${escapeAttr(q.hint)}')">Sprawdź</button>
+      </div>
+      <div class="feedback" id="feedback"></div>
+    </div>
+    <button class="btn btn-next" id="btnNext" disabled onclick="nextQuestion()">Dalej &#x27A1;&#xFE0F;</button>
+  `;
+  const input = document.getElementById('typeInput');
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !answered) {
+      document.getElementById('btnCheck').click();
+    }
+  });
+  input.focus();
+}
+
+function checkTypeIn(correct, hint) {
+  if (answered) return;
+  answered = true;
+  const input = document.getElementById('typeInput');
+  const val = input.value;
+  const isCorrect = normalize(val) === normalize(correct);
+
+  input.disabled = true;
+  document.getElementById('btnCheck').style.display = 'none';
+
+  if (isCorrect) {
+    input.classList.add('correct');
+    input.closest('.question-card').classList.add('flash-correct');
+    showFeedback(true, hint ? `&#x1F4A1; ${hint}` : '');
+    recordAnswer(true);
+  } else {
+    input.classList.add('incorrect');
+    showFeedback(false, `Poprawna odpowiedź: <strong>${correct}</strong><br>&#x1F4A1; ${hint}`);
+    recordAnswer(false);
+  }
+  document.getElementById('btnNext').disabled = false;
+}
+
+function renderTF(area, sec, q, qNum, qTotal) {
+  area.innerHTML = `
+    <div class="section-header" style="padding-top:16px;padding-bottom:10px;">
+      <h2 style="font-size:1rem;">${sec.emoji} ${sec.title}</h2>
+    </div>
+    <div class="question-card">
+      <div class="q-counter">Pytanie ${qNum} / ${qTotal}</div>
+      <div class="q-prompt">&#x00AB;${q.q}&#x00BB;</div>
+      <div class="tf-row">
+        <button class="btn-tf" onclick="selectTF(this, true, ${q.answer}, '${escapeAttr(q.explanation)}')">&#x2705; PRAWDA</button>
+        <button class="btn-tf" onclick="selectTF(this, false, ${q.answer}, '${escapeAttr(q.explanation)}')">&#x274C; FAŁSZ</button>
+      </div>
+      <div class="feedback" id="feedback"></div>
+    </div>
+    <button class="btn btn-next" id="btnNext" disabled onclick="nextQuestion()">Dalej &#x27A1;&#xFE0F;</button>
+  `;
+}
+
+function selectTF(btn, selected, correct, explanation) {
+  if (answered) return;
+  answered = true;
+  const buttons = document.querySelectorAll('.btn-tf');
+  buttons.forEach(b => b.disabled = true);
+
+  const isCorrect = selected === correct;
+  if (isCorrect) {
+    btn.classList.add('selected-correct');
+    btn.closest('.question-card').classList.add('flash-correct');
+    showFeedback(true, explanation);
+    recordAnswer(true);
+  } else {
+    btn.classList.add('selected-incorrect');
+    buttons.forEach(b => {
+      const bVal = b.textContent.includes('PRAWDA');
+      if (bVal === correct) b.classList.add('reveal-correct');
+    });
+    showFeedback(false, explanation);
+    recordAnswer(false);
+  }
+  document.getElementById('btnNext').disabled = false;
+}
+
+function showFeedback(isCorrect, msg) {
+  const fb = document.getElementById('feedback');
+  fb.className = 'feedback show ' + (isCorrect ? 'correct-fb' : 'incorrect-fb');
+  fb.innerHTML = (isCorrect ? '&#x2705; Dobrze!' : '&#x274C; Niestety...') + (msg ? '<br>' + msg : '');
+}
+
+function recordAnswer(isCorrect) {
+  sectionScores[currentSection].total++;
+  if (isCorrect) {
+    sectionScores[currentSection].correct++;
+    totalCorrect++;
+  }
+  flatIndex++;
+}
+
+function nextQuestion() {
+  const sec = sections[currentSection];
+  currentQuestion++;
+  if (currentQuestion >= sec.questions.length) {
+    currentSection++;
+    currentQuestion = 0;
+    if (currentSection >= sections.length) {
+      showResults();
+      return;
+    }
+    renderSectionIntro();
+  } else {
+    renderQuestion();
+  }
+}
+
+// ===== RESULTS =====
+
+function showResults() {
+  stopTimer();
+  const elapsed = getElapsed();
+  const total = getTotalQ();
+  const pct = Math.round((totalCorrect / total) * 100);
+
+  let emoji, label;
+  if (pct >= 90) { emoji = '&#x1F3C6;'; label = 'Mistrz!'; }
+  else if (pct >= 70) { emoji = '&#x1F4AA;'; label = 'Bardzo dobrze!'; }
+  else if (pct >= 50) { emoji = '&#x1F4DA;'; label = 'Trzeba powtórzyć'; }
+  else { emoji = '&#x1F504;'; label = 'Powtórz lekcję'; }
+
+  document.getElementById('progressBar').style.width = '100%';
+  document.getElementById('quizScreen').classList.remove('active');
+  const area = document.getElementById('resultsScreen');
+  area.classList.add('active');
+
+  let rowsHTML = sections.map((sec, i) => {
+    const sc = sectionScores[i];
+    const secPct = sc.total > 0 ? Math.round((sc.correct / sc.total) * 100) : 0;
+    let barColor = secPct >= 70 ? 'var(--correct)' : secPct >= 50 ? 'var(--accent)' : 'var(--incorrect)';
+    return `
+      <div class="section-score-row">
+        <span class="name">${sec.emoji} ${sec.title}</span>
+        <span class="score">${sc.correct}/${sc.total}</span>
+        <div class="section-score-bar"><div class="section-score-fill" style="width:${secPct}%;background:${barColor};"></div></div>
+      </div>`;
+  }).join('');
+
+  let emojiGrade;
+  if (pct >= 90) emojiGrade = '\u{1F3C6}';
+  else if (pct >= 70) emojiGrade = '\u{1F4AA}';
+  else if (pct >= 50) emojiGrade = '\u{1F4DA}';
+  else emojiGrade = '\u{1F504}';
+
+  area.innerHTML = `
+    <div class="results">
+      <div class="grade-emoji">${emoji}</div>
+      <div class="grade-label">${label}</div>
+      <div class="score-main">${totalCorrect} / ${total}</div>
+      <div class="score-pct">${pct}% poprawnych odpowiedzi</div>
+      <div class="elapsed">&#x23F1;&#xFE0F; Czas: ${elapsed}</div>
+      <div class="section-scores">
+        <h3>Wyniki sekcji</h3>
+        ${rowsHTML}
+      </div>
+      <div class="results-buttons">
+        <button class="btn-share" onclick="shareResult(${totalCorrect}, ${total}, ${pct}, '${emojiGrade}')">&#x1F4CB; Podziel się wynikiem</button>
+        <button class="btn-restart" onclick="restart()">&#x1F504; Spróbuj jeszcze raz</button>
+      </div>
+    </div>
+  `;
+}
+
+function shareResult(correct, total, pct, emoji) {
+  const text = `\u{1F9E0} Quiz: Spo\u0142ecze\u0144stwo zm\u0119czenia \u2014 Lekcja 2\nM\u00F3j wynik: ${correct}/${total} (${pct}%)\n${emoji}`;
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(() => showToast()).catch(() => fallbackCopy(text));
+  } else {
+    fallbackCopy(text);
+  }
+}
+
+function fallbackCopy(text) {
+  const ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.position = 'fixed';
+  ta.style.left = '-9999px';
+  document.body.appendChild(ta);
+  ta.select();
+  try { document.execCommand('copy'); showToast(); } catch(e) {}
+  document.body.removeChild(ta);
+}
+
+function showToast() {
+  const t = document.getElementById('copiedToast');
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+function restart() {
+  document.getElementById('resultsScreen').classList.remove('active');
+  document.getElementById('progressBar').style.width = '0%';
+  document.getElementById('timer').style.display = 'none';
+  stopTimer();
+
+  // Re-shuffle everything
+  sections.forEach(sec => {
+    sec.questions = shuffle(sec.questions);
+    if (sec.type === 'mc') {
+      sec.questions.forEach(q => { q.options = shuffle(q.options); });
+    }
+  });
+
+  document.getElementById('welcomeScreen').classList.add('active');
+}
+</script>
+</body>
+</html>
