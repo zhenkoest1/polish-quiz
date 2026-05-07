@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>200 najwa&#x017C;niejszych s&#x0142;&#x00F3;w</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #1a1a2e;
+  --card: #16213e;
+  --card-hover: #1a2745;
+  --text: #e8e8e8;
+  --text-dim: #8899aa;
+  --accent: #fdcb6e;
+  --correct: #00b894;
+  --incorrect: #e17055;
+  --correct-bg: rgba(0, 184, 148, 0.15);
+  --incorrect-bg: rgba(225, 112, 85, 0.15);
+  --progress-bg: #0f3460;
+  --border: rgba(255,255,255,0.06);
+  --shadow: 0 4px 24px rgba(0,0,0,0.3);
+  --radius: 12px;
+}
+
+html { font-size: 16px; }
+
+body {
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100dvh;
+  line-height: 1.5;
+  -webkit-tap-highlight-color: transparent;
+  overflow-x: hidden;
+}
+
+/* Progress bar */
+.progress-container {
+  position: fixed; top: 0; left: 0; right: 0;
+  height: 4px; background: var(--progress-bg); z-index: 100;
+}
+.progress-bar {
+  height: 100%; background: var(--accent);
+  transition: width 0.4s ease; width: 0%;
+}
+
+/* Timer */
+.timer {
+  position: fixed; top: 8px; right: 12px; z-index: 101;
+  font-size: 0.8rem; color: var(--text-dim);
+  background: rgba(22, 33, 62, 0.9); padding: 4px 10px;
+  border-radius: 20px; backdrop-filter: blur(4px);
+}
+
+/* Main container */
+.container {
+  max-width: 540px; margin: 0 auto;
+  padding: 24px 16px 40px; min-height: 100dvh;
+}
+
+/* Screens */
+.screen { display: none; animation: fadeIn 0.35s ease; }
+.screen.active { display: block; }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Welcome */
+.welcome { text-align: center; padding-top: 15vh; }
+.welcome h1 { font-size: 1.8rem; margin-bottom: 8px; }
+.welcome .subtitle { color: var(--accent); font-size: 1.05rem; margin-bottom: 24px; }
+.welcome .desc { color: var(--text-dim); font-size: 0.95rem; margin-bottom: 32px; line-height: 1.6; }
+.welcome .time-hint { color: var(--text-dim); font-size: 0.85rem; margin-bottom: 28px; }
+
+/* Buttons */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: 14px 32px; border: none; border-radius: var(--radius);
+  font-size: 1.05rem; font-weight: 600; cursor: pointer;
+  transition: all 0.2s ease; min-height: 48px;
+  -webkit-user-select: none; user-select: none;
+}
+.btn-primary {
+  background: var(--accent); color: #1a1a2e;
+}
+.btn-primary:active { transform: scale(0.97); filter: brightness(0.9); }
+.btn-next {
+  background: var(--accent); color: #1a1a2e;
+  width: 100%; margin-top: 16px;
+}
+.btn-next:disabled {
+  background: #3a3a5e; color: #666; cursor: not-allowed;
+}
+
+/* Section header */
+.section-header {
+  text-align: center; padding: 32px 0 20px;
+}
+.section-header .emoji { font-size: 2rem; margin-bottom: 8px; }
+.section-header h2 { font-size: 1.3rem; color: var(--accent); margin-bottom: 4px; }
+.section-header .section-desc { color: var(--text-dim); font-size: 0.88rem; }
+.section-header .section-count {
+  display: inline-block; margin-top: 10px; padding: 4px 14px;
+  background: rgba(253,203,110,0.1); border-radius: 20px;
+  font-size: 0.8rem; color: var(--accent);
+}
+
+/* Question card */
+.question-card {
+  background: var(--card); border-radius: var(--radius);
+  padding: 24px 20px; box-shadow: var(--shadow);
+  border: 1px solid var(--border);
+}
+.q-counter {
+  font-size: 0.8rem; color: var(--text-dim); margin-bottom: 12px;
+}
+.q-prompt {
+  font-size: 1.15rem; font-weight: 600; margin-bottom: 20px; line-height: 1.45;
+}
+.q-prompt .highlight {
+  color: var(--accent); background: rgba(253,203,110,0.1);
+  padding: 2px 6px; border-radius: 4px;
+}
+
+/* Multiple choice options */
+.options { display: flex; flex-direction: column; gap: 10px; }
+.option {
+  display: block; width: 100%; padding: 14px 16px;
+  background: rgba(255,255,255,0.03); border: 2px solid var(--border);
+  border-radius: var(--radius); color: var(--text);
+  font-size: 1rem; text-align: left; cursor: pointer;
+  transition: all 0.2s ease; min-height: 48px;
+  -webkit-user-select: none; user-select: none;
+}
+.option:active { transform: scale(0.98); }
+.option.selected-correct {
+  border-color: var(--correct); background: var(--correct-bg);
+  color: var(--correct); font-weight: 600;
+}
+.option.selected-incorrect {
+  border-color: var(--incorrect); background: var(--incorrect-bg);
+  color: var(--incorrect);
+  animation: shake 0.4s ease;
+}
+.option.reveal-correct {
+  border-color: var(--correct); background: var(--correct-bg);
+  color: var(--correct); font-weight: 600;
+}
+.option:disabled { cursor: not-allowed; }
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-6px); }
+  40% { transform: translateX(6px); }
+  60% { transform: translateX(-4px); }
+  80% { transform: translateX(4px); }
+}
+
+/* Correct flash */
+@keyframes correctFlash {
+  0% { box-shadow: 0 0 0 0 rgba(0,184,148,0.4); }
+  50% { box-shadow: 0 0 20px 4px rgba(0,184,148,0.2); }
+  100% { box-shadow: 0 0 0 0 rgba(0,184,148,0); }
+}
+.flash-correct { animation: correctFlash 0.6s ease; }
+
+/* Feedback */
+.feedback {
+  margin-top: 14px; padding: 12px 16px;
+  border-radius: var(--radius); font-size: 0.9rem; line-height: 1.5;
+  display: none;
+}
+.feedback.show { display: block; animation: fadeIn 0.3s ease; }
+.feedback.correct-fb {
+  background: var(--correct-bg); border-left: 3px solid var(--correct); color: var(--correct);
+}
+.feedback.incorrect-fb {
+  background: var(--incorrect-bg); border-left: 3px solid var(--incorrect); color: #f0a090;
+}
+
+/* Results */
+.results { text-align: center; padding-top: 8vh; }
+.results .grade-emoji { font-size: 3.5rem; margin-bottom: 12px; }
+.results .grade-label { font-size: 1.5rem; font-weight: 700; margin-bottom: 4px; }
+.results .score-main {
+  font-size: 2.2rem; font-weight: 800; color: var(--accent); margin: 12px 0;
+}
+.results .score-pct { font-size: 1rem; color: var(--text-dim); margin-bottom: 28px; }
+
+.section-scores {
+  text-align: left; background: var(--card); border-radius: var(--radius);
+  padding: 20px; margin-bottom: 24px; box-shadow: var(--shadow);
+  border: 1px solid var(--border);
+}
+.section-scores h3 { font-size: 1rem; margin-bottom: 14px; color: var(--accent); }
+.section-score-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 8px 0; border-bottom: 1px solid var(--border);
+  font-size: 0.9rem;
+}
+.section-score-row:last-child { border-bottom: none; }
+.section-score-row .name { flex: 1; }
+.section-score-row .score {
+  font-weight: 700; min-width: 60px; text-align: right;
+}
+.section-score-bar {
+  width: 60px; height: 6px; background: var(--progress-bg);
+  border-radius: 3px; margin-left: 10px; overflow: hidden;
+}
+.section-score-fill {
+  height: 100%; border-radius: 3px;
+  transition: width 0.6s ease;
+}
+
+.results-buttons { display: flex; flex-direction: column; gap: 12px; margin-top: 20px; }
+.btn-share {
+  background: transparent; border: 2px solid var(--accent);
+  color: var(--accent); width: 100%; padding: 14px;
+  border-radius: var(--radius); font-size: 1rem; font-weight: 600;
+  cursor: pointer; min-height: 48px;
+}
+.btn-share:active { transform: scale(0.97); }
+.btn-restart {
+  background: var(--card); border: 2px solid var(--border);
+  color: var(--text); width: 100%; padding: 14px;
+  border-radius: var(--radius); font-size: 1rem; font-weight: 600;
+  cursor: pointer; min-height: 48px;
+}
+.btn-restart:active { transform: scale(0.97); }
+
+.copied-toast {
+  position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+  background: var(--correct); color: #fff; padding: 10px 24px;
+  border-radius: 24px; font-size: 0.9rem; font-weight: 600;
+  opacity: 0; transition: opacity 0.3s; z-index: 200;
+  pointer-events: none;
+}
+.copied-toast.show { opacity: 1; }
+
+.elapsed {
+  color: var(--text-dim); font-size: 0.85rem; margin-bottom: 20px;
+}
+</style>
+</head>
+<body>
+
+<div class="progress-container"><div class="progress-bar" id="progressBar"></div></div>
+<div class="timer" id="timer" style="display:none;">00:00</div>
+<div class="copied-toast" id="copiedToast">Skopiowano!</div>
+
+<div class="container" id="app">
+
+  <!-- Welcome -->
+  <div class="screen active" id="welcomeScreen">
+    <div class="welcome">
+      <h1>&#x1F4DA; 200 najwa&#x017C;niejszych s&#x0142;&#x00F3;w</h1>
+      <div class="subtitle">Najcz&#x0119;stsze i najpotrzebniejsze s&#x0142;owa w j&#x0119;zyku polskim</div>
+      <div class="desc">
+        200 pyta&#x0144; &#x2014; definicja po polsku, wybierz poprawne s&#x0142;owo.<br>
+        Ucz si&#x0119; przez kontekst!
+      </div>
+      <div class="time-hint">&#x23F1;&#xFE0F; Szacowany czas: ~45&#x2013;60 min</div>
+      <button class="btn btn-primary" onclick="startQuiz()">Zaczynamy!</button>
+    </div>
+  </div>
+
+  <!-- Quiz area -->
+  <div class="screen" id="quizScreen"></div>
+
+  <!-- Results -->
+  <div class="screen" id="resultsScreen"></div>
+
+</div>
+
+<script>
+// ===== HELPERS =====
+function shuffle(arr) {
+  var a = arr.slice();
+  for (var i = a.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var tmp = a[i]; a[i] = a[j]; a[j] = tmp;
+  }
+  return a;
+}
+
+function escapeAttr(s) {
+  return s.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+}
+
+// ===== QUESTION POOLS (20 each, shown 18) =====
+
+var pool1 = [
+  { q: 'Kto? Ka\u017Cdy z nas. Gatunek homo sapiens. M\u0119\u017Cczyzna albo kobieta \u2014 to nie ma znaczenia.', answer: 'cz\u0142owiek', options: ['cz\u0142owiek', 'dziecko', 'przyjaciel', 'lekarz'] },
+  { q: 'Doros\u0142a osoba p\u0142ci \u017Ce\u0144skiej. Mama, siostra, babcia \u2014 to wszystko...', answer: 'kobieta', options: ['kobieta', 'c\u00F3rka', 'siostra', '\u017Cona'] },
+  { q: 'Doros\u0142a osoba p\u0142ci m\u0119skiej. Tata, brat, dziadek \u2014 to wszystko...', answer: 'm\u0119\u017Cczyzna', options: ['m\u0119\u017Cczyzna', 'syn', 'brat', 'm\u0105\u017C'] },
+  { q: 'Ma\u0142a osoba, kt\u00F3ra jeszcze ro\u015Bnie. Chodzi do szko\u0142y albo przedszkola.', answer: 'dziecko', options: ['dziecko', 'ucze\u0144', 'syn', 'kolega'] },
+  { q: 'Kobieta, kt\u00F3ra ma dzieci. M\u00F3wisz do niej "mamo". To s\u0142owo codzienne i ciep\u0142e.', answer: 'mama', options: ['mama', 'babcia', 'siostra', 'c\u00F3rka'] },
+  { q: 'M\u0119\u017Cczyzna, kt\u00F3ry ma dzieci. M\u00F3wisz do niego "tato". Bardziej oficjalnie: ojciec.', answer: 'tata', options: ['tata', 'dziadek', 'brat', 'syn'] },
+  { q: 'Ch\u0142opak albo m\u0119\u017Cczyzna, kt\u00F3ry ma tych samych rodzic\u00F3w co ty. Syn twoich rodzic\u00F3w.', answer: 'brat', options: ['brat', 'kolega', 'przyjaciel', 'syn'] },
+  { q: 'Dziewczyna albo kobieta, kt\u00F3ra ma tych samych rodzic\u00F3w co ty. C\u00F3rka twoich rodzic\u00F3w.', answer: 'siostra', options: ['siostra', 'c\u00F3rka', 'kole\u017Canka', 'mama'] },
+  { q: 'Ch\u0142opiec w rodzinie. Rodzice m\u00F3wi\u0105: "To nasz..."', answer: 'syn', options: ['syn', 'brat', 'dziecko', 'wnuk'] },
+  { q: 'Dziewczynka w rodzinie. Rodzice m\u00F3wi\u0105: "To nasza..."', answer: 'c\u00F3rka', options: ['c\u00F3rka', 'siostra', 'wnuczka', 'dziecko'] },
+  { q: 'Osoba, kt\u00F3r\u0105 lubisz i kt\u00F3rej ufasz. Sp\u0119dzasz z ni\u0105 czas wolny. To nie rodzina.', answer: 'przyjaciel', options: ['przyjaciel', 'kolega', 's\u0105siad', 'brat'] },
+  { q: 'Osoba, kt\u00F3ra mieszka obok ciebie \u2014 w tym samym budynku albo obok twojego domu.', answer: 's\u0105siad', options: ['s\u0105siad', 'kolega', 'przyjaciel', 'szef'] },
+  { q: 'Ta osoba pracuje w szpitalu. Pomaga chorym ludziom. Nosi bia\u0142y fartuch.', answer: 'lekarz', options: ['lekarz', 'nauczyciel', 'kierowca', 's\u0105siad'] },
+  { q: 'Ta osoba pracuje w szkole. Uczy dzieci czyta\u0107, pisa\u0107, liczy\u0107.', answer: 'nauczyciel', options: ['nauczyciel', 'lekarz', 'szef', 'przyjaciel'] },
+  { q: 'Osoba, z kt\u00F3r\u0105 pracujesz albo uczysz si\u0119. Nie przyjaciel, ale znajomy.', answer: 'kolega', options: ['kolega', 'przyjaciel', 's\u0105siad', 'brat'] },
+  { q: 'Osoba, kt\u00F3ra zarz\u0105dza w firmie. M\u00F3wisz do niej "prosz\u0119 pana/pani\u0105". To tw\u00F3j prze\u0142o\u017Cony.', answer: 'szef', options: ['szef', 'kolega', 'nauczyciel', 'lekarz'] },
+  { q: 'Kobieta w ma\u0142\u017Ce\u0144stwie. M\u0105\u017C m\u00F3wi: "To moja..."', answer: '\u017Cona', options: ['\u017Cona', 'mama', 'siostra', 'c\u00F3rka'] },
+  { q: 'M\u0119\u017Cczyzna w ma\u0142\u017Ce\u0144stwie. \u017Bona m\u00F3wi: "To m\u00F3j..."', answer: 'm\u0105\u017C', options: ['m\u0105\u017C', 'tata', 'brat', 'syn'] },
+  { q: 'Mama twojej mamy albo taty. Starsza kobieta w rodzinie. Robi najlepsze jedzenie.', answer: 'babcia', options: ['babcia', 'mama', 'siostra', 'c\u00F3rka'] },
+  { q: 'Tata twojej mamy albo taty. Starszy m\u0119\u017Cczyzna w rodzinie. Opowiada historie.', answer: 'dziadek', options: ['dziadek', 'tata', 'brat', 'syn'] }
+];
+
+var pool2 = [
+  { q: 'Miejsce, gdzie mieszkasz. Ma \u015Bciany, dach, drzwi. Mo\u017Ce by\u0107 du\u017Cy albo ma\u0142y.', answer: 'dom', options: ['dom', 'mieszkanie', 'pok\u00F3j', 'biuro'] },
+  { q: 'Dom w bloku. Masz klucze, wchodzisz po schodach albo wjedziesz wind\u0105. P\u0142acisz czynsz.', answer: 'mieszkanie', options: ['mieszkanie', 'dom', 'pok\u00F3j', 'hotel'] },
+  { q: 'Cz\u0119\u015B\u0107 domu albo mieszkania. Mo\u017Ce by\u0107 sypialnia, salon, gabinet.', answer: 'pok\u00F3j', options: ['pok\u00F3j', 'dom', 'kuchnia', '\u0142azienka'] },
+  { q: 'Tu gotujesz jedzenie. Jest lod\u00F3wka, piekarnik, zlew.', answer: 'kuchnia', options: ['kuchnia', '\u0142azienka', 'pok\u00F3j', 'restauracja'] },
+  { q: 'Tu bierzesz prysznic i myjesz z\u0119by. Jest wanna albo kabina.', answer: '\u0142azienka', options: ['\u0142azienka', 'kuchnia', 'pok\u00F3j', 'szpital'] },
+  { q: 'Droga w mie\u015Bcie, po kt\u00F3rej chodz\u0105 ludzie i je\u017Cd\u017C\u0105 samochody. Ma nazw\u0119 i numer.', answer: 'ulica', options: ['ulica', 'droga', 'most', 'park'] },
+  { q: 'Du\u017Ce miejsce, gdzie mieszka du\u017Co ludzi. Ma ulice, sklepy, szko\u0142y. Warszawa, Krak\u00F3w, Wroc\u0142aw.', answer: 'miasto', options: ['miasto', 'pa\u0144stwo', 'wie\u015B', 'dzielnica'] },
+  { q: 'Tu kupujesz jedzenie, ubrania, elektronik\u0119. P\u0142acisz pieni\u0105dzmi.', answer: 'sklep', options: ['sklep', 'restauracja', 'biuro', 'dworzec'] },
+  { q: 'Dzieci chodz\u0105 tu codziennie. Ucz\u0105 si\u0119 matematyki, polskiego, historii.', answer: 'szko\u0142a', options: ['szko\u0142a', 'biuro', 'szpital', 'ko\u015Bci\u00F3\u0142'] },
+  { q: 'Miejsce, gdzie pracujesz. Sp\u0119dzasz tam 8 godzin dziennie. Dostajesz pensj\u0119.', answer: 'praca', options: ['praca', 'biuro', 'firma', 'szko\u0142a'] },
+  { q: 'Pok\u00F3j w firmie, gdzie siedzisz przy biurku i komputerze. Pracujesz tu.', answer: 'biuro', options: ['biuro', 'praca', 'sklep', 'szko\u0142a'] },
+  { q: 'Tu lekarze pomagaj\u0105 chorym ludziom. Przyjedziesz karetk\u0105, gdy jeste\u015B bardzo chory.', answer: 'szpital', options: ['szpital', 'apteka', 'lekarz', 'ko\u015Bci\u00F3\u0142'] },
+  { q: 'Tu jesz obiad lub kolacj\u0119 z rodzin\u0105. Kelner przynosi menu. P\u0142acisz rachunek.', answer: 'restauracja', options: ['restauracja', 'kuchnia', 'sklep', 'kawiarnia'] },
+  { q: 'Budynek religijny. Ludzie chodz\u0105 tu w niedziel\u0119 na msz\u0119.', answer: 'ko\u015Bci\u00F3\u0142', options: ['ko\u015Bci\u00F3\u0142', 'szko\u0142a', 'szpital', 'muzeum'] },
+  { q: 'Zielone miejsce w mie\u015Bcie. S\u0105 drzewa, \u0142awki, \u015Bcie\u017Cki. Mo\u017Cesz spacerowa\u0107 i odpocz\u0105\u0107.', answer: 'park', options: ['park', 'las', 'ogr\u00F3d', 'pla\u017Ca'] },
+  { q: 'Tu czekasz na poci\u0105g albo autobus. Kupujesz bilet i patrzysz na rozk\u0142ad jazdy.', answer: 'dworzec', options: ['dworzec', 'przystanek', 'lotnisko', 'stacja'] },
+  { q: 'Tu l\u0105duj\u0105 i startuj\u0105 samoloty. Musisz mie\u0107 paszport i bilet.', answer: 'lotnisko', options: ['lotnisko', 'dworzec', 'stacja', 'port'] },
+  { q: 'Linia mi\u0119dzy dwoma pa\u0144stwami. Musisz pokaza\u0107 paszport, \u017Ceby j\u0105 przekroczy\u0107.', answer: 'granica', options: ['granica', 'ulica', 'droga', 'mapa'] },
+  { q: 'Konstrukcja nad rzek\u0105. Idziesz po nim z jednej strony na drug\u0105.', answer: 'most', options: ['most', 'droga', 'ulica', 'granica'] },
+  { q: 'Piasek, woda, s\u0142o\u0144ce. Le\u017Cysz na r\u0119czniku i opalasz si\u0119. Jest nad morzem albo jeziorem.', answer: 'pla\u017Ca', options: ['pla\u017Ca', 'park', 'ogr\u00F3d', 'las'] }
+];
+
+var pool3 = [
+  { q: 'Jemy to prawie ka\u017Cdego dnia. Kupujemy to w piekarni. Jest z m\u0105ki.', answer: 'chleb', options: ['chleb', 'mas\u0142o', 'ciasto', 'mi\u0119so'] },
+  { q: '\u017B\u00F3\u0142ty produkt z mleka. Smarujemy nim chleb. Jest t\u0142usty i mi\u0119kki.', answer: 'mas\u0142o', options: ['mas\u0142o', 'ser', 'chleb', 'mleko'] },
+  { q: 'Produkt z mleka, \u017C\u00F3\u0142ty albo bia\u0142y. Jemy go na kanapce albo z makaronem.', answer: 'ser', options: ['ser', 'mas\u0142o', 'jajko', 'mleko'] },
+  { q: 'Jedzenie ze zwierz\u0119cia \u2014 wieprzowina, wo\u0142owina, kurczak. Sma\u017Cymy, gotujemy, pieczemy.', answer: 'mi\u0119so', options: ['mi\u0119so', 'ryba', 'chleb', 'zupa'] },
+  { q: 'P\u0142ywa w rzece albo w morzu. Jemy j\u0105 sma\u017Con\u0105, pieczon\u0105, na parze. Zdrowe jedzenie.', answer: 'ryba', options: ['ryba', 'mi\u0119so', 'kurczak', 'krab'] },
+  { q: 'Ciep\u0142e, p\u0142ynne jedzenie w talerzu. Jesz \u0142y\u017Ck\u0105. Mo\u017Ce by\u0107 pomidorowa, ogórkowa, rosó\u0142.', answer: 'zupa', options: ['zupa', 'obiad', 'sos', 'herbata'] },
+  { q: 'G\u0142\u00F3wny posi\u0142ek dnia, w Polsce oko\u0142o 13:00\u201315:00. Zwykle zupa + drugie danie.', answer: 'obiad', options: ['obiad', 'kolacja', '\u015Bniadanie', 'lunch'] },
+  { q: 'Pierwszy posi\u0142ek rano. Jesz kanapki, jajka, pijesz kaw\u0119 albo herbat\u0119.', answer: '\u015Bniadanie', options: ['\u015Bniadanie', 'obiad', 'kolacja', 'podwieczorek'] },
+  { q: 'Ostatni posi\u0142ek dnia, wieczorem. Mo\u017Ce by\u0107 lekki \u2014 sa\u0142atka, kanapka.', answer: 'kolacja', options: ['kolacja', 'obiad', '\u015Bniadanie', 'zupa'] },
+  { q: 'Pijemy j\u0105 codziennie. P\u0142ynie w rzece. Jest przezroczysta. Cz\u0142owiek jej potrzebuje do \u017Cycia.', answer: 'woda', options: ['woda', 'mleko', 'herbata', 'sok'] },
+  { q: 'Ciemny, gor\u0105cy napój. Pijemy go rano, \u017Ceby si\u0119 obudzi\u0107. Ma kofein\u0119.', answer: 'kawa', options: ['kawa', 'herbata', 'kakao', 'woda'] },
+  { q: 'Gor\u0105cy napój z li\u015Bci. Pijemy j\u0105 z cukrem albo cytryn\u0105. Popularna w Anglii i Polsce.', answer: 'herbata', options: ['herbata', 'kawa', 'sok', 'woda'] },
+  { q: 'Alkoholowy napój, z\u0142oty kolor. Pijemy go zimnego, z butelki albo kufla.', answer: 'piwo', options: ['piwo', 'wino', 'w\u00F3dka', 'sok'] },
+  { q: 'Bia\u0142y napój, kt\u00F3ry daje krowa. Dzieci go pij\u0105. Z niego robi\u0105 ser i jogurt.', answer: 'mleko', options: ['mleko', 'woda', '\u015Bmietana', 'kefir'] },
+  { q: 'Okr\u0105g\u0142y owoc, czerwony albo zielony. Ro\u015Bnie na drzewie. Jedno dziennie \u2014 zdrowie!', answer: 'jab\u0142ko', options: ['jab\u0142ko', 'gruszka', 'pomara\u0144cza', '\u015Bliwka'] },
+  { q: 'Warzywo, kt\u00F3re ro\u015Bnie pod ziemi\u0105. Robimy z niego frytki, pure, placki.', answer: 'ziemniak', options: ['ziemniak', 'marchewka', 'cebula', 'pomidor'] },
+  { q: 'Bia\u0142y proszek, s\u0142odki. Dodajemy go do herbaty, ciasta, kawy. Niezdrowy w du\u017Cych ilo\u015Bciach.', answer: 'cukier', options: ['cukier', 's\u00F3l', 'm\u0105ka', 'ry\u017C'] },
+  { q: 'Bia\u0142y proszek, s\u0142ony. Dodajemy go do zupy, mi\u0119sa, sałatki. Nie s\u0142odki!', answer: 's\u00F3l', options: ['s\u00F3l', 'cukier', 'pieprz', 'm\u0105ka'] },
+  { q: 'Czarna albo bia\u0142a przyprawa, ostra. Dodajemy j\u0105 do zupy i mi\u0119sa.', answer: 'pieprz', options: ['pieprz', 's\u00F3l', 'cukier', 'cynamon'] },
+  { q: 'S\u0142odkie jedzenie z m\u0105ki i cukru. Pieczemy je w piekarniku. Jemy na urodziny.', answer: 'ciasto', options: ['ciasto', 'chleb', 'cukier', 'czekolada'] }
+];
+
+var pool4 = [
+  { q: 'Godziny, minuty, sekundy \u2014 mierzymy to zegarkiem. Nie mo\u017Cna go cofn\u0105\u0107.', answer: 'czas', options: ['czas', 'godzina', 'dzie\u0144', 'moment'] },
+  { q: '60 minut. Patrzysz na zegarek i m\u00F3wisz: "Kt\u00F3ra jest?"', answer: 'godzina', options: ['godzina', 'minuta', 'czas', 'moment'] },
+  { q: 'Od rana do wieczora. Ma 24 godziny. Ka\u017Cdy tydzie\u0144 ma 7 takich.', answer: 'dzie\u0144', options: ['dzie\u0144', 'noc', 'tydzie\u0144', 'rano'] },
+  { q: 'Jest ciemno. \u015Bpisz. Gwiazdy \u015Bwiec\u0105 na niebie. Przeciwie\u0144stwo dnia.', answer: 'noc', options: ['noc', 'wiecz\u00F3r', 'dzie\u0144', 'sen'] },
+  { q: 'Pocz\u0105tek dnia. S\u0142o\u0144ce wstaje. Pijesz kaw\u0119 i jesz \u015Bniadanie.', answer: 'rano', options: ['rano', 'po\u0142udnie', 'wiecz\u00F3r', 'dzie\u0144'] },
+  { q: 'Ko\u0144c\u00F3wka dnia, po po\u0142udniu. Robi si\u0119 ciemno. Jesz kolacj\u0119 i odpoczywasz.', answer: 'wiecz\u00F3r', options: ['wiecz\u00F3r', 'rano', 'noc', 'po\u0142udnie'] },
+  { q: '7 dni razem: poniedzia\u0142ek, wtorek... niedziela. Cz\u0119\u015B\u0107 miesi\u0105ca.', answer: 'tydzie\u0144', options: ['tydzie\u0144', 'miesi\u0105c', 'dzie\u0144', 'rok'] },
+  { q: 'Oko\u0142o 30 dni. Stycze\u0144, luty, marzec... Ma nazw\u0119. Cz\u0119\u015B\u0107 roku.', answer: 'miesi\u0105c', options: ['miesi\u0105c', 'tydzie\u0144', 'rok', 'dzie\u0144'] },
+  { q: '12 miesi\u0119cy. 365 dni. Zaczyna si\u0119 w styczniu, ko\u0144czy w grudniu.', answer: 'rok', options: ['rok', 'miesi\u0105c', 'wiek', 'sezon'] },
+  { q: 'Dzie\u0144 przed dzisiaj. Ju\u017C min\u0105\u0142. "Co robi\u0142e\u015B...?"', answer: 'wczoraj', options: ['wczoraj', 'dzisiaj', 'jutro', 'przedwczoraj'] },
+  { q: 'Ten dzie\u0144, teraz, w tej chwili. "Jaki jest... plan?"', answer: 'dzisiaj', options: ['dzisiaj', 'wczoraj', 'jutro', 'teraz'] },
+  { q: 'Dzie\u0144 po dzisiaj. Jeszcze nie przyszed\u0142. "Co b\u0119dziesz robi\u0107...?"', answer: 'jutro', options: ['jutro', 'dzisiaj', 'wczoraj', 'potem'] },
+  { q: 'Temperatura, deszcz, s\u0142o\u0144ce, wiatr \u2014 to wszystko razem. Patrzysz w prognoz\u0119.', answer: 'pogoda', options: ['pogoda', 'klimat', 'wiatr', 'temperatura'] },
+  { q: 'Woda spada z nieba. Potrzebujesz parasola. Drogi s\u0105 mokre.', answer: 'deszcz', options: ['deszcz', '\u015Bnieg', 'wiatr', 'burza'] },
+  { q: 'Bia\u0142y, zimny, spada z nieba zim\u0105. Dzieci lepi\u0105 ba\u0142wana.', answer: '\u015Bnieg', options: ['\u015Bnieg', 'deszcz', 'l\u00F3d', 'mr\u00F3z'] },
+  { q: '\u015Awieci na niebie. Daje \u015Bwiat\u0142o i ciep\u0142o. W lecie jest d\u0142ugo.', answer: 's\u0142o\u0144ce', options: ['s\u0142o\u0144ce', 'ksi\u0119\u017Cyc', 'gwiazda', 'ogie\u0144'] },
+  { q: 'Powietrze si\u0119 rusza. Mo\u017Ce by\u0107 silny albo s\u0142aby. Rusza drzewami.', answer: 'wiatr', options: ['wiatr', 'burza', 'deszcz', 'pogoda'] },
+  { q: 'Pora roku, kiedy jest zimno, pada \u015Bnieg. Grudzie\u0144, stycze\u0144, luty.', answer: 'zima', options: ['zima', 'jesie\u0144', 'lato', 'wiosna'] },
+  { q: 'Pora roku, kiedy jest gor\u0105co. Wakacje! Czerwiec, lipiec, sierpie\u0144.', answer: 'lato', options: ['lato', 'zima', 'wiosna', 'jesie\u0144'] },
+  { q: 'Pora roku po zimie. Ro\u015Bnie trawa, kwitn\u0105 kwiaty. Marzec, kwiecie\u0144, maj.', answer: 'wiosna', options: ['wiosna', 'lato', 'jesie\u0144', 'zima'] }
+];
+
+var pool5 = [
+  { q: 'Cz\u0119\u015B\u0107 cia\u0142a na g\u00F3rze. Jest w niej m\u00F3zg. Mamy tam oczy, nos, usta.', answer: 'g\u0142owa', options: ['g\u0142owa', 'twarz', 'szyja', 'plecy'] },
+  { q: 'Cz\u0119\u015B\u0107 cia\u0142a od ramienia do d\u0142oni. Ma\u0142y palec, du\u017Cy palec. Trzymamy ni\u0105 rzeczy.', answer: 'r\u0119ka', options: ['r\u0119ka', 'noga', 'palec', 'd\u0142o\u0144'] },
+  { q: 'Cz\u0119\u015B\u0107 cia\u0142a od biodra do stopy. Chodzimy dzi\u0119ki niej. Mamy dwie.', answer: 'noga', options: ['noga', 'r\u0119ka', 'kolano', 'stopa'] },
+  { q: 'Widzisz dzi\u0119ki niemu. Jest w g\u0142owie. Mo\u017Ce by\u0107 niebieskie, br\u0105zowe, zielone.', answer: 'oko', options: ['oko', 'ucho', 'nos', 'usta'] },
+  { q: 'S\u0142yszysz dzi\u0119ki niemu. Jest z boku g\u0142owy. Masz dwa.', answer: 'ucho', options: ['ucho', 'oko', 'nos', 'g\u0142owa'] },
+  { q: 'Organ w klatce piersiowej. Pompuje krew. Symbol mi\u0142o\u015Bci.', answer: 'serce', options: ['serce', 'p\u0142uco', 'w\u0105troba', 'm\u00F3zg'] },
+  { q: 'Jest w ustach, bia\u0142y i twardy. Gryziemy nim jedzenie. Dentysta go leczy.', answer: 'z\u0105b', options: ['z\u0105b', 'j\u0119zyk', 'usta', 'szcz\u0119ka'] },
+  { q: 'Czerwony p\u0142yn w ciele. P\u0142ynie w \u017Cy\u0142ach. Kiedy si\u0119 skaleczysz, widzisz j\u0105.', answer: 'krew', options: ['krew', 'woda', 'pot', '\u0142za'] },
+  { q: 'Kiedy co\u015B ci\u0119 boli. Nieprzyjemne uczucie w ciele. Mo\u017Ce by\u0107 g\u0142owy, brzucha, z\u0119ba.', answer: 'b\u00F3l', options: ['b\u00F3l', 'choroba', 'gor\u0105czka', 'kaszel'] },
+  { q: 'Kiedy jeste\u015B chory. Stan, gdy organizm nie dzia\u0142a dobrze. Grypa, anga to przyk\u0142ady.', answer: 'choroba', options: ['choroba', 'b\u00F3l', 'gor\u0105czka', 'alergia'] },
+  { q: 'Dobry stan organizmu. Kiedy nic ci\u0119 nie boli i czujesz si\u0119 \u015Bwietnie.', answer: 'zdrowie', options: ['zdrowie', 'sprawno\u015B\u0107', 'energia', 'rado\u015B\u0107'] },
+  { q: 'Kartka od lekarza na leki. Idziesz z ni\u0105 do apteki.', answer: 'recepta', options: ['recepta', 'faktura', 'rachunek', 'skierowanie'] },
+  { q: 'Sklep z lekami. Kupujesz tu tabletki, syrop, plastry.', answer: 'apteka', options: ['apteka', 'sklep', 'szpital', 'klinika'] },
+  { q: 'Ma\u0142y, okr\u0105g\u0142y lek. Po\u0142ykasz j\u0105 z wod\u0105 kiedy jeste\u015B chory.', answer: 'tabletka', options: ['tabletka', 'zastrzyk', 'syrop', 'recepta'] },
+  { q: 'Temperatura cia\u0142a wy\u017Csza ni\u017C 37\u00B0C. Jeste\u015B chory, jest ci gor\u0105co.', answer: 'gor\u0105czka', options: ['gor\u0105czka', 'b\u00F3l', 'kaszel', 'dreszcze'] },
+  { q: 'Kiedy jeste\u015B przeziebiony, robisz to z gard\u0142em: khe, khe, khe!', answer: 'kaszel', options: ['kaszel', 'kichanie', 'b\u00F3l', 'gor\u0105czka'] },
+  { q: 'Ty\u0142 cia\u0142a, od szyi do po\u015Bladk\u00F3w. Cz\u0119sto boli od siedzenia przy komputerze.', answer: 'plecy', options: ['plecy', 'brzuch', 'noga', 'r\u0119ka'] },
+  { q: 'Ma\u0142a cz\u0119\u015B\u0107 r\u0119ki albo nogi. Masz ich dziesi\u0119\u0107 na r\u0119kach.', answer: 'palec', options: ['palec', 'r\u0119ka', 'd\u0142o\u0144', 'paznokcie'] },
+  { q: 'Cz\u0119\u015B\u0107 cia\u0142a z przodu, mi\u0119dzy klatk\u0105 piersiow\u0105 a nogami. Mo\u017Ce bole\u0107 po jedzeniu.', answer: 'brzuch', options: ['brzuch', 'plecy', 'klatka', 'biodro'] },
+  { q: 'Staw w \u015Brodku nogi. Zginasz j\u0105 kiedy siadasz. Sportowcy cz\u0119sto maj\u0105 z nim problemy.', answer: 'kolano', options: ['kolano', 'stopa', '\u0142okcie\u0107', 'kostka'] }
+];
+
+var pool6 = [
+  { q: 'Banknoty i monety. P\u0142acisz nimi w sklepie. W Polsce to z\u0142ot\u00F3wki.', answer: 'pieni\u0105dze', options: ['pieni\u0105dze', 'cena', 'rachunek', 'pensja'] },
+  { q: 'To, co robisz przez 8 godzin dziennie za pensj\u0119. Zaw\u00F3d, stanowisko.', answer: 'praca', options: ['praca', 'zadanie', 'projekt', 'spotkanie'] },
+  { q: 'Pieni\u0105dze, kt\u00F3re dostajesz co miesi\u0105c za prac\u0119. Wynagrodzenie.', answer: 'pensja', options: ['pensja', 'cena', 'rachunek', 'faktura'] },
+  { q: 'Kartka z kwot\u0105 do zap\u0142aty. Dostajesz go w restauracji albo po us\u0142udze.', answer: 'rachunek', options: ['rachunek', 'faktura', 'cena', 'paragon'] },
+  { q: 'Ile co\u015B kosztuje. Patrzysz na metk\u0119 w sklepie. "Jaka jest...?"', answer: 'cena', options: ['cena', 'rachunek', 'pensja', 'koszt'] },
+  { q: 'Miejsce, gdzie kupujesz rzeczy. W Biedronce, Lidlu albo Rossmannie.', answer: 'sklep', options: ['sklep', 'firma', 'biuro', 'hurtownia'] },
+  { q: 'Dawa\u0107 pieni\u0105dze i dosta\u0107 co\u015B. Idziesz do sklepu i... jab\u0142ka.', answer: 'kupowa\u0107', options: ['kupowa\u0107', 'sprzedawa\u0107', 'p\u0142aci\u0107', 'wybiera\u0107'] },
+  { q: 'Masz co\u015B i dajesz to komu\u015B za pieni\u0105dze. Sklep... produkty.', answer: 'sprzedawa\u0107', options: ['sprzedawa\u0107', 'kupowa\u0107', 'dawa\u0107', 'wymienia\u0107'] },
+  { q: 'Dawa\u0107 pieni\u0105dze za co\u015B. Kart\u0105 albo got\u00F3wk\u0105. "Ile musz\u0119...?"', answer: 'p\u0142aci\u0107', options: ['p\u0142aci\u0107', 'kupowa\u0107', 'liczy\u0107', 'oszcz\u0119dza\u0107'] },
+  { q: 'Dokument za us\u0142ug\u0119 albo towar w firmie. Potrzebujesz jej do ksi\u0119gowo\u015Bci.', answer: 'faktura', options: ['faktura', 'rachunek', 'umowa', 'paragon'] },
+  { q: 'Dokument, kt\u00F3ry podpisujesz z pracodawc\u0105. Okre\u015Bla warunki pracy.', answer: 'umowa', options: ['umowa', 'faktura', 'rachunek', 'wniosek'] },
+  { q: 'Organizacja, kt\u00F3ra zarabia pieni\u0105dze. Ma pracownik\u00F3w i szefa. Apple, Google, Biedronka.', answer: 'firma', options: ['firma', 'biuro', 'sklep', 'bank'] },
+  { q: 'Kiedy kilka os\u00F3b siedzi razem i rozmawia o pracy. W sali konferencyjnej.', answer: 'spotkanie', options: ['spotkanie', 'projekt', 'zadanie', 'prezentacja'] },
+  { q: 'Du\u017Ce zadanie z planem i celem. Pracujesz nad nim tygodnie albo miesi\u0105ce.', answer: 'projekt', options: ['projekt', 'zadanie', 'spotkanie', 'pomys\u0142'] },
+  { q: 'Data, do kt\u00F3rej musisz co\u015B sko\u0144czy\u0107. Deadline. "Jaki jest...?"', answer: 'termin', options: ['termin', 'plan', 'harmonogram', 'data'] },
+  { q: 'Co\u015B, co musisz zrobi\u0107. Ma\u0142a cz\u0119\u015B\u0107 projektu. Na li\u015Bcie to-do.', answer: 'zadanie', options: ['zadanie', 'projekt', 'spotkanie', 'obowi\u0105zek'] },
+  { q: 'Sytuacja trudna, kt\u00F3r\u0105 trzeba rozwi\u0105za\u0107. "Mamy..."', answer: 'problem', options: ['problem', 'b\u0142\u0105d', 'zadanie', 'pytanie'] },
+  { q: 'Nowa my\u015Bl w g\u0142owie. "Mam \u015Bwietny...!" Kreatywno\u015B\u0107.', answer: 'pomys\u0142', options: ['pomys\u0142', 'problem', 'plan', 'marzenie'] },
+  { q: 'Kiedy osi\u0105gasz cel. Wszystko si\u0119 uda\u0142o. Przeciwie\u0144stwo pora\u017Cki.', answer: 'sukces', options: ['sukces', 'pora\u017Cka', 'problem', 'szcz\u0119\u015Bcie'] },
+  { q: 'Kiedy robisz co\u015B \u017Ale. Pomy\u0142ka w pracy, w tek\u015Bcie, w \u017Cyciu.', answer: 'b\u0142\u0105d', options: ['b\u0142\u0105d', 'problem', 'wina', 'kara'] }
+];
+
+var pool7 = [
+  { q: 'Kiedy wszystko jest dobrze, czujesz rado\u015B\u0107 i harmoni\u0119. U\u015Bmiechasz si\u0119.', answer: 'szcz\u0119\u015Bcie', options: ['szcz\u0119\u015Bcie', 'rado\u015B\u0107', 'nadzieja', 'spok\u00F3j'] },
+  { q: 'Kiedy jest ci \u017Ale i chcesz p\u0142aka\u0107. Przeciwie\u0144stwo rado\u015Bci.', answer: 'smutek', options: ['smutek', 'z\u0142o\u015B\u0107', 'zm\u0119czenie', 'nuda'] },
+  { q: 'Czujesz to, kiedy boisz si\u0119 czego\u015B. Serce bije szybko. Chcesz uciec.', answer: 'strach', options: ['strach', 'z\u0142o\u015B\u0107', 'smutek', 'stres'] },
+  { q: 'Silna emocja, kiedy co\u015B ci\u0119 denerwuje. Chcesz krzycze\u0107. Twarz robi si\u0119 czerwona.', answer: 'z\u0142o\u015B\u0107', options: ['z\u0142o\u015B\u0107', 'strach', 'smutek', 'frustracj\u0105'] },
+  { q: 'Najsilniejsze uczucie mi\u0119dzy lud\u017Ami. Mi\u0119dzy par\u0105, rodzicem i dzieckiem. Symbol: serce.', answer: 'mi\u0142o\u015B\u0107', options: ['mi\u0142o\u015B\u0107', 'zaufanie', 'przyja\u017A\u0144', 'szcz\u0119\u015Bcie'] },
+  { q: 'Wierzysz, \u017Ce b\u0119dzie lepiej. Nawet gdy jest \u017Ale, czekasz na dobr\u0105 zmian\u0119.', answer: 'nadzieja', options: ['nadzieja', 'wiara', 'marzenie', 'cierpliwo\u015B\u0107'] },
+  { q: 'Cisza w duszy. Nie denerwujesz si\u0119, nie spieszysz. Czujesz harmoni\u0119.', answer: 'spok\u00F3j', options: ['spok\u00F3j', 'cisza', 'nuda', 'odpoczynek'] },
+  { q: 'Kiedy pracujesz za du\u017Co i nie masz energii. Chcesz spa\u0107. Cia\u0142o m\u00F3wi "stop".', answer: 'zm\u0119czenie', options: ['zm\u0119czenie', 'lenistwo', 'nuda', 'choroba'] },
+  { q: 'Kiedy jeste\u015B bardzo szcz\u0119\u015Bliwy w danej chwili. Intensywne szcz\u0119\u015Bcie.', answer: 'rado\u015B\u0107', options: ['rado\u015B\u0107', 'szcz\u0119\u015Bcie', 'nadzieja', 'zabawa'] },
+  { q: 'Wierzysz komu\u015B. Wiesz, \u017Ce ta osoba ci\u0119 nie zdradzi i nie ok\u0142amie.', answer: 'zaufanie', options: ['zaufanie', 'mi\u0142o\u015B\u0107', 'lojalno\u015B\u0107', 'szacunek'] },
+  { q: 'Pozytywna cecha. Cz\u0142owiek, kt\u00F3ry pomaga, jest mi\u0142y, uczciwy.', answer: 'dobry', options: ['dobry', 'm\u0105dry', 'silny', 'weso\u0142y'] },
+  { q: 'Negatywna cecha. Cz\u0142owiek, kt\u00F3ry krzywdzi, k\u0142amie, jest okrutny.', answer: 'z\u0142y', options: ['z\u0142y', 'g\u0142upi', 's\u0142aby', 'brzydki'] },
+  { q: 'Kiedy co\u015B wygl\u0105da dobrze, przyjemnie. \u0141adna pogoda, \u0142adna dziewczyna, \u0142adny widok.', answer: '\u0142adny', options: ['\u0142adny', 'dobry', 'weso\u0142y', 'mi\u0142y'] },
+  { q: 'Kiedy co\u015B wygl\u0105da \u017Ale, nieprzyjemnie. Przeciwie\u0144stwo \u0142adnego.', answer: 'brzydki', options: ['brzydki', 'z\u0142y', 'smutny', 's\u0142aby'] },
+  { q: 'Osoba, kt\u00F3ra du\u017Co wie i dobrze my\u015Bli. Przeciwie\u0144stwo g\u0142upiego.', answer: 'm\u0105dry', options: ['m\u0105dry', 'silny', 'dobry', 'odwa\u017Cny'] },
+  { q: 'Osoba, kt\u00F3ra nie my\u015Bli i robi b\u0142\u0119dy. Przeciwie\u0144stwo m\u0105drego.', answer: 'g\u0142upi', options: ['g\u0142upi', 's\u0142aby', 'z\u0142y', 'leniwy'] },
+  { q: 'Osoba, kt\u00F3ra ma du\u017Co si\u0142y. Mo\u017Ce nosi\u0107 ci\u0119\u017Ckie rzeczy. Sportowiec.', answer: 'silny', options: ['silny', 'szybki', 'm\u0105dry', 'odwa\u017Cny'] },
+  { q: 'Osoba bez si\u0142y i energii. Nie mo\u017Ce nosi\u0107 ci\u0119\u017Ckich rzeczy. Przeciwie\u0144stwo silnego.', answer: 's\u0142aby', options: ['s\u0142aby', 'leniwy', 'chory', 'zm\u0119czony'] },
+  { q: 'Osoba, kt\u00F3ra si\u0119 \u015Bmieje, \u017Cartuje, jest w dobrym nastroju. Lubi zabawy.', answer: 'weso\u0142y', options: ['weso\u0142y', 'dobry', '\u0142adny', 'zabawny'] },
+  { q: 'Osoba, kt\u00F3ra jest w z\u0142ym nastroju, nie u\u015Bmiecha si\u0119. Chce p\u0142aka\u0107.', answer: 'smutny', options: ['smutny', 's\u0142aby', 'chory', 'zm\u0119czony'] }
+];
+
+var pool8 = [
+  { q: 'Pojazd z czterema ko\u0142ami i silnikiem. Jedziesz nim po drodze. Musisz mie\u0107 prawo jazdy.', answer: 'samoch\u00F3d', options: ['samoch\u00F3d', 'autobus', 'poci\u0105g', 'rower'] },
+  { q: 'Du\u017Cy pojazd miejski. Wozi du\u017Co ludzi. Czekasz na przystanku.', answer: 'autobus', options: ['autobus', 'samoch\u00F3d', 'tramwaj', 'poci\u0105g'] },
+  { q: 'Jedzie po szynach. Szybko, daleko. Z Warszawy do Krakowa. Kupujesz bilet na dworcu.', answer: 'poci\u0105g', options: ['poci\u0105g', 'autobus', 'metro', 'samoch\u00F3d'] },
+  { q: 'Lata w powietrzu. Ma skrzyd\u0142a. Lecisz nim do innego kraju. Startuje z lotniska.', answer: 'samolot', options: ['samolot', 'helikopter', 'poci\u0105g', 'statek'] },
+  { q: 'Dwa ko\u0142a, peda\u0142y. Jedziesz na nim sam, u\u017Cywaj\u0105c n\u00F3g. Zdrowy transport.', answer: 'rower', options: ['rower', 'skuter', 'samoch\u00F3d', 'deskorolka'] },
+  { q: 'Kawa\u0142ek papieru albo plik na telefonie. Potrzebujesz go w poci\u0105gu, autobusie, samolocie.', answer: 'bilet', options: ['bilet', 'paszport', 'mapa', 'karta'] },
+  { q: 'Asfalt mi\u0119dzy miastami. Jedziesz ni\u0105 samochodem. Mo\u017Ce by\u0107 autostrad\u0105.', answer: 'droga', options: ['droga', 'ulica', 'most', '\u015Bcie\u017Cka'] },
+  { q: 'Rysunek terenu z ulicami i budynkami. U\u017Cywasz jej, \u017Ceby znale\u017A\u0107 drog\u0119. Google Maps to cyfrowa...', answer: 'mapa', options: ['mapa', 'kompas', 'atlas', 'plan'] },
+  { q: 'Prawa, lewa, prosto, do ty\u0142u. "W kt\u00F3rym...?"', answer: 'kierunek', options: ['kierunek', 'droga', 'adres', 'cel'] },
+  { q: 'Miejsce, gdzie czekasz na autobus albo tramwaj. Ma rozk\u0142ad jazdy i \u0142awk\u0119.', answer: 'przystanek', options: ['przystanek', 'dworzec', 'stacja', 'parking'] },
+  { q: 'Miejsce, gdzie zatrzymuje si\u0119 poci\u0105g albo metro. Wi\u0119ksze ni\u017C przystanek.', answer: 'stacja', options: ['stacja', 'przystanek', 'dworzec', 'lotnisko'] },
+  { q: 'Dokument podr\u00F3\u017Cny z twoim zdj\u0119ciem. Potrzebujesz go za granic\u0105.', answer: 'paszport', options: ['paszport', 'bilet', 'wiza', 'dow\u00F3d'] },
+  { q: 'Torba na k\u00F3\u0142kach. Pakujesz do niej ubrania na podr\u00F3\u017C. Zabierasz j\u0105 na lotnisko.', answer: 'walizka', options: ['walizka', 'plecak', 'torba', 'paczka'] },
+  { q: 'Budynek, gdzie \u015Bpisz podczas podr\u00F3\u017Cy. P\u0142acisz za noc. Ma recepcj\u0119 i pokoje.', answer: 'hotel', options: ['hotel', 'hostel', 'mieszkanie', 'pensjonat'] },
+  { q: 'Jedziesz do innego miasta albo kraju. Zwiedzasz, odpoczywasz. Mo\u017Ce by\u0107 s\u0142u\u017Cbowa albo turystyczna.', answer: 'podr\u00F3\u017C', options: ['podr\u00F3\u017C', 'wycieczka', 'wakacje', 'podróżnik'] },
+  { q: 'Wolny czas latem, zwykle 2 tygodnie. Jedziesz nad morze albo w g\u00F3ry. Nie pracujesz.', answer: 'wakacje', options: ['wakacje', 'urlop', 'podr\u00F3\u017C', 'weekend'] },
+  { q: 'Osoba, kt\u00F3ra prowadzi samoch\u00F3d, autobus albo taks\u00F3wk\u0119.', answer: 'kierowca', options: ['kierowca', 'pasa\u017Cer', 'pilot', 'mechanik'] },
+  { q: 'Osoba, kt\u00F3ra jedzie samochodem albo autobusem, ale nie prowadzi.', answer: 'pasa\u017Cer', options: ['pasa\u017Cer', 'kierowca', 'turysta', 'podr\u00F3\u017Cnik'] },
+  { q: 'Ile kilometr\u00F3w na godzin\u0119 jedzie samoch\u00F3d. Na autostradzie: 140 km/h. "Jaka jest...?"', answer: 'pr\u0119dko\u015B\u0107', options: ['pr\u0119dko\u015B\u0107', 'odleg\u0142o\u015B\u0107', 'kierunek', 'droga'] },
+  { q: 'Kiedy samoch\u00F3d uderza w co\u015B albo w kogo\u015B. Kolizja. Mo\u017Ce by\u0107 niebezpiecznie.', answer: 'wypadek', options: ['wypadek', 'awaria', 'korek', 'problem'] }
+];
+
+var pool9 = [
+  { q: 'Najwa\u017Cniejszy czasownik w polskim. "Ja jestem, ty jeste\u015B, on jest."', answer: 'by\u0107', options: ['by\u0107', 'mie\u0107', 'robi\u0107', 'i\u015B\u0107'] },
+  { q: '"Ja mam, ty masz, on ma." Posiadanie czego\u015B. "... czas? ... pieni\u0105dze?"', answer: 'mie\u0107', options: ['mie\u0107', 'by\u0107', 'chcie\u0107', 'dosta\u0107'] },
+  { q: '"Co robisz?" \u2014 "Robi\u0119 obiad." Wykonywanie czynno\u015Bci. Ja robi\u0119, ty robisz.', answer: 'robi\u0107', options: ['robi\u0107', 'pracowa\u0107', 'mie\u0107', 'i\u015B\u0107'] },
+  { q: 'U\u017Cywasz ust i g\u0142osu. "Ja m\u00F3wi\u0119, ty m\u00F3wisz." Komunikacja s\u0142owna.', answer: 'm\u00F3wi\u0107', options: ['m\u00F3wi\u0107', 'pyta\u0107', 'odpowiada\u0107', 'czyta\u0107'] },
+  { q: 'Masz informacj\u0119 w g\u0142owie. "Ja wiem, ty wiesz, on wie." Nie musisz pyta\u0107.', answer: 'wiedzie\u0107', options: ['wiedzie\u0107', 'rozumie\u0107', 'pami\u0119ta\u0107', 'my\u015Ble\u0107'] },
+  { q: 'Masz pragnienie. "Ja chc\u0119, ty chcesz." Wyra\u017Ca \u017Cyczenie albo ochot\u0119.', answer: 'chcie\u0107', options: ['chcie\u0107', 'musie\u0107', 'm\u00F3c', 'lubi\u0107'] },
+  { q: 'Nie masz wyboru, to konieczno\u015B\u0107. "Ja musz\u0119, ty musisz." Obowi\u0105zek.', answer: 'musie\u0107', options: ['musie\u0107', 'chcie\u0107', 'm\u00F3c', 'powinien'] },
+  { q: 'Masz mo\u017Cliwo\u015B\u0107. "Ja mog\u0119, ty mo\u017Cesz." Potrafisz albo masz pozwolenie.', answer: 'm\u00F3c', options: ['m\u00F3c', 'musie\u0107', 'chcie\u0107', 'umie\u0107'] },
+  { q: 'Ruszasz si\u0119 piechot\u0105, powoli. "Id\u0119 do domu." Nogi, krok po kroku.', answer: 'i\u015B\u0107', options: ['i\u015B\u0107', 'jecha\u0107', 'biec', 'chodzi\u0107'] },
+  { q: 'Ruszasz si\u0119 pojazdem: samochodem, autobusem, rowerem. "Jad\u0119 do pracy."', answer: 'jecha\u0107', options: ['jecha\u0107', 'i\u015B\u0107', 'lecie\u0107', 'p\u0142yn\u0105\u0107'] },
+  { q: 'Wk\u0142adasz jedzenie do ust, \u017Cujesz i po\u0142ykasz. "Ja jem, ty jesz." Codziennie 3 razy.', answer: 'je\u015B\u0107', options: ['je\u015B\u0107', 'pi\u0107', 'gotowa\u0107', 'smakowa\u0107'] },
+  { q: 'Bierzesz p\u0142yn i po\u0142ykasz: wod\u0119, kaw\u0119, herbat\u0119. "Ja pij\u0119, ty pijesz."', answer: 'pi\u0107', options: ['pi\u0107', 'je\u015B\u0107', 'nale\u0107', 'lewa\u0107'] },
+  { q: 'Zamykasz oczy, le\u017Cysz w \u0142\u00F3\u017Cku, \u015Bnisz. "Ja \u015Bpi\u0119." Cz\u0142owiek potrzebuje 7\u20138 godzin.', answer: 'spa\u0107', options: ['spa\u0107', 'le\u017Ce\u0107', 'odpocz\u0105\u0107', 'marzy\u0107'] },
+  { q: 'Patrzysz na tekst i rozumiesz go. Ksi\u0105\u017Cka, gazeta, artyku\u0142. "Ja czytam, ty czytasz."', answer: 'czyta\u0107', options: ['czyta\u0107', 'pisa\u0107', 'uczy\u0107 si\u0119', 'rozumie\u0107'] },
+  { q: 'Tworzysz tekst r\u0119k\u0105 albo na klawiaturze. List, e-mail, notatka. "Ja pisz\u0119, ty piszesz."', answer: 'pisa\u0107', options: ['pisa\u0107', 'czyta\u0107', 'rysowa\u0107', 'm\u00F3wi\u0107'] },
+  { q: 'Robisz co\u015B w firmie za pieni\u0105dze. 8 godzin dziennie. "Ja pracuj\u0119, ty pracujesz."', answer: 'pracowa\u0107', options: ['pracowa\u0107', 'robi\u0107', 'zarabia\u0107', 'tworzy\u0107'] },
+  { q: 'Zdobywasz now\u0105 wiedz\u0119. W szkole, z ksi\u0105\u017Cki, online. "Ja ucz\u0119 si\u0119 polskiego."', answer: 'uczy\u0107 si\u0119', options: ['uczy\u0107 si\u0119', 'czyta\u0107', 'wiedzie\u0107', 'studiowa\u0107'] },
+  { q: 'Kiedy s\u0142yszysz co\u015B i wiesz, co to znaczy. "Ja rozumiem, ty rozumiesz." Komprehensja.', answer: 'rozumie\u0107', options: ['rozumie\u0107', 'wiedzie\u0107', 's\u0142ysze\u0107', 'my\u015Ble\u0107'] },
+  { q: 'Chcesz dosta\u0107 informacj\u0119 i m\u00F3wisz zdanie z "?" na ko\u0144cu. "Ja pytam, ty pytasz."', answer: 'pyta\u0107', options: ['pyta\u0107', 'odpowiada\u0107', 'm\u00F3wi\u0107', 'prosi\u0107'] },
+  { q: 'Kto\u015B ci\u0119 pyta i dajesz informacj\u0119. Reakcja na pytanie. "Ja odpowiadam, ty odpowiadasz."', answer: 'odpowiada\u0107', options: ['odpowiada\u0107', 'pyta\u0107', 'm\u00F3wi\u0107', 't\u0142umaczy\u0107'] }
+];
+
+var pool10 = [
+  { q: 'Pozytywna odpowied\u017A. Zgadzasz si\u0119. Przeciwie\u0144stwo "nie". K\u0142amiesz g\u0142ow\u0105 od g\u00F3ry do do\u0142u.', answer: 'tak', options: ['tak', 'dobrze', 'oczywi\u015Bcie', 'jasne'] },
+  { q: 'Negatywna odpowied\u017A. Nie zgadzasz si\u0119. Kr\u0119cisz g\u0142ow\u0105 na boki.', answer: 'nie', options: ['nie', 'nigdy', '\u017Ale', 'nic'] },
+  { q: 'M\u00F3wisz to, kiedy o co\u015B prosisz. Albo kiedy dajesz co\u015B komu\u015B. Grzeczne s\u0142owo.', answer: 'prosz\u0119', options: ['prosz\u0119', 'dzi\u0119kuj\u0119', 'przepraszam', 'dobrze'] },
+  { q: 'M\u00F3wisz to, kiedy kto\u015B ci\u0119 pomaga. Wyra\u017Casz wdzi\u0119czno\u015B\u0107. Grzeczne s\u0142owo.', answer: 'dzi\u0119kuj\u0119', options: ['dzi\u0119kuj\u0119', 'prosz\u0119', 'przepraszam', 'dobrze'] },
+  { q: 'M\u00F3wisz to, kiedy zrobi\u0142e\u015B co\u015B z\u0142ego. Albo kiedy chcesz przej\u015B\u0107 obok kogo\u015B.', answer: 'przepraszam', options: ['przepraszam', 'dzi\u0119kuj\u0119', 'prosz\u0119', 'dobrze'] },
+  { q: 'Wszystko jest w porz\u0105dku, OK. "Jak si\u0119 czujesz?" \u2014 "..."', answer: 'dobrze', options: ['dobrze', '\u017Ale', 'tak', 'normalnie'] },
+  { q: 'Nie dobrze. Sytuacja jest negatywna. "Jak si\u0119 czujesz?" \u2014 "..." Przeciwie\u0144stwo "dobrze".', answer: '\u017Ale', options: ['\u017Ale', 'dobrze', 'nie', 'smutno'] },
+  { q: 'Wielka ilo\u015B\u0107 czego\u015B. Nie ma\u0142o, ale... "Mam... pracy." Przeciwie\u0144stwo "ma\u0142o".', answer: 'du\u017Co', options: ['du\u017Co', 'ma\u0142o', 'bardzo', 'wi\u0119cej'] },
+  { q: 'Niewielka ilo\u015B\u0107 czego\u015B. Nie du\u017Co, ale... "Mam... czasu." Przeciwie\u0144stwo "du\u017Co".', answer: 'ma\u0142o', options: ['ma\u0142o', 'du\u017Co', 'troch\u0119', 'mniej'] },
+  { q: 'S\u0142owo wzmacniaj\u0105ce. "... \u0142adny", "... smaczny", "... dzi\u0119kuj\u0119". Intensywno\u015B\u0107.', answer: 'bardzo', options: ['bardzo', 'du\u017Co', 'naprawd\u0119', 'tak'] },
+  { q: 'Ca\u0142y czas, bez wyj\u0105tku. Codziennie, ka\u017Cdego dnia. "On... si\u0119 sp\u00F3\u017Ania."', answer: 'zawsze', options: ['zawsze', 'cz\u0119sto', 'zwykle', 'ci\u0105gle'] },
+  { q: 'Zero razy. W og\u00F3le nie. "On... nie k\u0142amie." Przeciwie\u0144stwo "zawsze".', answer: 'nigdy', options: ['nigdy', 'zawsze', 'rzadko', 'nic'] },
+  { q: 'W tej chwili, w tym momencie. Nie wczoraj, nie jutro, ale... "Co robisz...?"', answer: 'teraz', options: ['teraz', 'dzisiaj', 'tutaj', 'w\u0142a\u015Bnie'] },
+  { q: 'Nie teraz, ale w przysz\u0142o\u015Bci. Za chwil\u0119, za godzin\u0119. "Zrobi\u0119 to..."', answer: 'potem', options: ['potem', 'teraz', 'jutro', 'zaraz'] },
+  { q: 'W tym miejscu, gdzie jeste\u015B. Nie tam, ale... "Id\u017A...!" (wskazujesz palcem na pod\u0142og\u0119)', answer: 'tutaj', options: ['tutaj', 'tam', 'teraz', 'blisko'] },
+  { q: 'W innym miejscu, daleko. Nie tutaj, ale... "Patrz...!" (wskazujesz palcem w dal)', answer: 'tam', options: ['tam', 'tutaj', 'daleko', 'gdzie\u015B'] },
+  { q: 'Pytanie o przyczyn\u0119. "... nie przyszed\u0142e\u015B?" Chcesz zna\u0107 pow\u00F3d.', answer: 'dlaczego', options: ['dlaczego', 'jak', 'kiedy', 'co'] },
+  { q: 'Pytanie o spos\u00F3b. "... si\u0119 nazywasz?" "... to zrobi\u0107?" Spos\u00F3b dzia\u0142ania.', answer: 'jak', options: ['jak', 'dlaczego', 'ile', 'co'] },
+  { q: 'Pytanie o liczb\u0119. "... to kosztuje?" "... masz lat?" Kwota, ilo\u015B\u0107.', answer: 'ile', options: ['ile', 'jak', 'co', 'dlaczego'] },
+  { q: 'Pytanie o czas. "... przyjdziesz?" "... masz urodziny?" Data, godzina.', answer: 'kiedy', options: ['kiedy', 'ile', 'jak', 'gdzie'] }
+];
+
+// ===== BUILD SECTIONS =====
+
+var allPools = [
+  { pool: pool1, id: 's1', emoji: '\uD83D\uDC68\u200D\uD83D\uDC69\u200D\uD83D\uDC67\u200D\uD83D\uDC66', title: 'Ludzie i rodzina', desc: 'S\u0142owa o ludziach, rodzinie i relacjach', show: 18 },
+  { pool: pool2, id: 's2', emoji: '\uD83C\uDFE0', title: 'Dom i miejsce', desc: 'S\u0142owa o domu, mie\u015Bcie i miejscach', show: 18 },
+  { pool: pool3, id: 's3', emoji: '\uD83C\uDF5E', title: 'Jedzenie i picie', desc: 'S\u0142owa o jedzeniu, piciu i posi\u0142kach', show: 18 },
+  { pool: pool4, id: 's4', emoji: '\u23F0', title: 'Czas i pogoda', desc: 'S\u0142owa o czasie, porach roku i pogodzie', show: 18 },
+  { pool: pool5, id: 's5', emoji: '\uD83E\uDDB4', title: 'Cia\u0142o i zdrowie', desc: 'S\u0142owa o ciele, zdrowiu i medycynie', show: 18 },
+  { pool: pool6, id: 's6', emoji: '\uD83D\uDCB0', title: 'Praca i pieni\u0105dze', desc: 'S\u0142owa o pracy, firmie i pieni\u0105dzach', show: 18 },
+  { pool: pool7, id: 's7', emoji: '\uD83D\uDE0A', title: 'Emocje i cechy', desc: 'S\u0142owa o uczuciach i cechach charakteru', show: 18 },
+  { pool: pool8, id: 's8', emoji: '\uD83D\uDE97', title: 'Transport i podr\u00F3\u017Ce', desc: 'S\u0142owa o transporcie, podróżach i wakacjach', show: 18 },
+  { pool: pool9, id: 's9', emoji: '\uD83D\uDD27', title: 'Podstawowe czasowniki', desc: 'Najwa\u017Cniejsze czasowniki z przyk\u0142adami koniugacji', show: 18 },
+  { pool: pool10, id: 's10', emoji: '\uD83D\uDD11', title: 'Przydatne wyra\u017Cenia', desc: 'S\u0142owa-klucze, kt\u00F3re us\u0142yszysz ka\u017Cdego dnia', show: 18 }
+];
+
+var sections = allPools.map(function(cfg) {
+  return {
+    id: cfg.id,
+    emoji: cfg.emoji,
+    title: cfg.title,
+    desc: cfg.desc,
+    type: 'mc',
+    questions: shuffle(cfg.pool).slice(0, cfg.show)
+  };
+});
+
+// Store original pools for restart
+var originalPools = allPools.map(function(cfg) { return cfg.pool.slice(); });
+
+// ===== STATE =====
+var currentSection = 0;
+var currentQuestion = 0;
+var sectionScores = [];
+var totalCorrect = 0;
+var totalQuestions = 0;
+var startTime = null;
+var timerInterval = null;
+var answered = false;
+var flatIndex = 0;
+
+// ===== ENGINE HELPERS =====
+
+function getTotalQ() {
+  return sections.reduce(function(s, sec) { return s + sec.questions.length; }, 0);
+}
+
+function updateProgress() {
+  var total = getTotalQ();
+  var pct = (flatIndex / total) * 100;
+  document.getElementById('progressBar').style.width = pct + '%';
+}
+
+function startTimer() {
+  startTime = Date.now();
+  var el = document.getElementById('timer');
+  el.style.display = 'block';
+  timerInterval = setInterval(function() {
+    var diff = Date.now() - startTime;
+    var m = Math.floor(diff / 60000);
+    var s = Math.floor((diff % 60000) / 1000);
+    el.textContent = String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+  }, 1000);
+}
+
+function stopTimer() {
+  clearInterval(timerInterval);
+}
+
+function getElapsed() {
+  if (!startTime) return '00:00';
+  var diff = Date.now() - startTime;
+  var m = Math.floor(diff / 60000);
+  var s = Math.floor((diff % 60000) / 1000);
+  return String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+}
+
+// ===== QUIZ ENGINE =====
+
+function startQuiz() {
+  // Shuffle options for MC questions
+  sections.forEach(function(sec) {
+    sec.questions.forEach(function(q) { q.options = shuffle(q.options); });
+  });
+
+  currentSection = 0;
+  currentQuestion = 0;
+  sectionScores = sections.map(function() { return { correct: 0, total: 0 }; });
+  totalCorrect = 0;
+  flatIndex = 0;
+  totalQuestions = getTotalQ();
+  answered = false;
+
+  document.getElementById('welcomeScreen').classList.remove('active');
+  document.getElementById('quizScreen').classList.add('active');
+  startTimer();
+  renderSectionIntro();
+}
+
+function renderSectionIntro() {
+  var sec = sections[currentSection];
+  var area = document.getElementById('quizScreen');
+  area.innerHTML =
+    '<div class="section-header">' +
+      '<div class="emoji">' + sec.emoji + '</div>' +
+      '<h2>' + sec.title + '</h2>' +
+      '<div class="section-desc">' + sec.desc + '</div>' +
+      '<div class="section-count">Sekcja ' + (currentSection + 1) + ' / ' + sections.length + ' \u2014 ' + sec.questions.length + ' pyta\u0144</div>' +
+    '</div>' +
+    '<button class="btn btn-next" onclick="renderQuestion()" style="margin-top:20px;">Start \u27A1\uFE0F</button>';
+  updateProgress();
+}
+
+function renderQuestion() {
+  var sec = sections[currentSection];
+  var q = sec.questions[currentQuestion];
+  answered = false;
+  var area = document.getElementById('quizScreen');
+  var qNum = currentQuestion + 1;
+  var qTotal = sec.questions.length;
+
+  var promptHTML = q.q;
+
+  var optionsHTML = '';
+  for (var i = 0; i < q.options.length; i++) {
+    optionsHTML += '<button class="option" data-idx="' + i + '" onclick="selectMC(this, \'' + escapeAttr(q.options[i]) + '\', \'' + escapeAttr(q.answer) + '\')">' + q.options[i] + '</button>';
+  }
+
+  area.innerHTML =
+    '<div class="section-header" style="padding-top:16px;padding-bottom:10px;">' +
+      '<h2 style="font-size:1rem;">' + sec.emoji + ' ' + sec.title + '</h2>' +
+    '</div>' +
+    '<div class="question-card">' +
+      '<div class="q-counter">Pytanie ' + qNum + ' / ' + qTotal + '</div>' +
+      '<div class="q-prompt">' + promptHTML + '</div>' +
+      '<div class="options">' + optionsHTML + '</div>' +
+      '<div class="feedback" id="feedback"></div>' +
+    '</div>' +
+    '<button class="btn btn-next" id="btnNext" disabled onclick="nextQuestion()">Dalej \u27A1\uFE0F</button>';
+  updateProgress();
+}
+
+function selectMC(btn, selected, correct) {
+  if (answered) return;
+  answered = true;
+  var options = document.querySelectorAll('.option');
+  options.forEach(function(o) { o.disabled = true; });
+
+  var isCorrect = selected === correct;
+  if (isCorrect) {
+    btn.classList.add('selected-correct');
+    btn.closest('.question-card').classList.add('flash-correct');
+    showFeedback(true, '');
+    recordAnswer(true);
+  } else {
+    btn.classList.add('selected-incorrect');
+    options.forEach(function(o) {
+      if (o.textContent === correct) o.classList.add('reveal-correct');
+    });
+    showFeedback(false, 'Poprawna odpowied\u017A: <strong>' + correct + '</strong>');
+    recordAnswer(false);
+  }
+  document.getElementById('btnNext').disabled = false;
+}
+
+function showFeedback(isCorrect, msg) {
+  var fb = document.getElementById('feedback');
+  fb.className = 'feedback show ' + (isCorrect ? 'correct-fb' : 'incorrect-fb');
+  fb.innerHTML = (isCorrect ? '\u2705 Dobrze!' : '\u274C Niestety...') + (msg ? '<br>' + msg : '');
+}
+
+function recordAnswer(isCorrect) {
+  sectionScores[currentSection].total++;
+  if (isCorrect) {
+    sectionScores[currentSection].correct++;
+    totalCorrect++;
+  }
+  flatIndex++;
+}
+
+function nextQuestion() {
+  var sec = sections[currentSection];
+  currentQuestion++;
+  if (currentQuestion >= sec.questions.length) {
+    currentSection++;
+    currentQuestion = 0;
+    if (currentSection >= sections.length) {
+      showResults();
+      return;
+    }
+    renderSectionIntro();
+  } else {
+    renderQuestion();
+  }
+}
+
+// ===== RESULTS =====
+
+function showResults() {
+  stopTimer();
+  var elapsed = getElapsed();
+  var total = getTotalQ();
+  var pct = Math.round((totalCorrect / total) * 100);
+
+  var emoji, label;
+  if (pct >= 90) { emoji = '\uD83C\uDFC6'; label = 'Mistrz!'; }
+  else if (pct >= 70) { emoji = '\uD83D\uDCAA'; label = 'Bardzo dobrze!'; }
+  else if (pct >= 50) { emoji = '\uD83D\uDCDA'; label = 'Trzeba powt\u00F3rzy\u0107'; }
+  else { emoji = '\uD83D\uDD04'; label = 'Spr\u00F3buj jeszcze raz'; }
+
+  document.getElementById('progressBar').style.width = '100%';
+  document.getElementById('quizScreen').classList.remove('active');
+  var area = document.getElementById('resultsScreen');
+  area.classList.add('active');
+
+  var rowsHTML = '';
+  for (var i = 0; i < sections.length; i++) {
+    var sec = sections[i];
+    var sc = sectionScores[i];
+    var secPct = sc.total > 0 ? Math.round((sc.correct / sc.total) * 100) : 0;
+    var barColor = secPct >= 70 ? 'var(--correct)' : secPct >= 50 ? 'var(--accent)' : 'var(--incorrect)';
+    rowsHTML +=
+      '<div class="section-score-row">' +
+        '<span class="name">' + sec.emoji + ' ' + sec.title + '</span>' +
+        '<span class="score">' + sc.correct + '/' + sc.total + '</span>' +
+        '<div class="section-score-bar"><div class="section-score-fill" style="width:' + secPct + '%;background:' + barColor + ';"></div></div>' +
+      '</div>';
+  }
+
+  var emojiGrade;
+  if (pct >= 90) emojiGrade = '\uD83C\uDFC6';
+  else if (pct >= 70) emojiGrade = '\uD83D\uDCAA';
+  else if (pct >= 50) emojiGrade = '\uD83D\uDCDA';
+  else emojiGrade = '\uD83D\uDD04';
+
+  area.innerHTML =
+    '<div class="results">' +
+      '<div class="grade-emoji">' + emoji + '</div>' +
+      '<div class="grade-label">' + label + '</div>' +
+      '<div class="score-main">' + totalCorrect + ' / ' + total + '</div>' +
+      '<div class="score-pct">' + pct + '% poprawnych odpowiedzi</div>' +
+      '<div class="elapsed">\u23F1\uFE0F Czas: ' + elapsed + '</div>' +
+      '<div class="section-scores">' +
+        '<h3>Wyniki sekcji</h3>' +
+        rowsHTML +
+      '</div>' +
+      '<div class="results-buttons">' +
+        '<button class="btn-share" onclick="shareResult(' + totalCorrect + ', ' + total + ', ' + pct + ', \'' + emojiGrade + '\')">\uD83D\uDCCB Podziel si\u0119 wynikiem</button>' +
+        '<button class="btn-restart" onclick="restart()">\uD83D\uDD04 Spr\u00F3buj jeszcze raz</button>' +
+      '</div>' +
+    '</div>';
+}
+
+function shareResult(correct, total, pct, emoji) {
+  var text = '\uD83D\uDCDA 200 najwa\u017Cniejszych s\u0142\u00F3w\nM\u00F3j wynik: ' + correct + '/' + total + ' (' + pct + '%)\n' + emoji;
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(function() { showToast(); }).catch(function() { fallbackCopy(text); });
+  } else {
+    fallbackCopy(text);
+  }
+}
+
+function fallbackCopy(text) {
+  var ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.position = 'fixed';
+  ta.style.left = '-9999px';
+  document.body.appendChild(ta);
+  ta.select();
+  try { document.execCommand('copy'); showToast(); } catch(e) {}
+  document.body.removeChild(ta);
+}
+
+function showToast() {
+  var t = document.getElementById('copiedToast');
+  t.classList.add('show');
+  setTimeout(function() { t.classList.remove('show'); }, 2000);
+}
+
+function restart() {
+  document.getElementById('resultsScreen').classList.remove('active');
+  document.getElementById('progressBar').style.width = '0%';
+  document.getElementById('timer').style.display = 'none';
+  stopTimer();
+
+  // Re-shuffle and re-slice from original pools
+  sections = allPools.map(function(cfg, i) {
+    return {
+      id: cfg.id,
+      emoji: cfg.emoji,
+      title: cfg.title,
+      desc: cfg.desc,
+      type: 'mc',
+      questions: shuffle(originalPools[i]).slice(0, cfg.show)
+    };
+  });
+
+  document.getElementById('welcomeScreen').classList.add('active');
+}
+</script>
+
+</body>
+</html>
