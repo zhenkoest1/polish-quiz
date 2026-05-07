@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>Quiz: Społeczeństwo zmęczenia — Lekcja 2</title>
+<title>Wielki Test Powtórzeniowy — Lekcje 1–4</title>
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -303,13 +303,13 @@ body {
   <!-- Welcome -->
   <div class="screen active" id="welcomeScreen">
     <div class="welcome">
-      <h1>&#x1F9E0; Quiz: Społeczeństwo zmęczenia</h1>
-      <div class="subtitle">Lekcja 2 — powtórka i sprawdzian</div>
+      <h1>&#x1F4DA; Wielki Test Powt&#x00F3;rzeniowy</h1>
+      <div class="subtitle">Lekcje 1&#x2013;4 &#x2014; Tatry, Han, Michels, Kompromis</div>
       <div class="desc">
-        62 pytania z ośmiu kategorii:<br>
-        słówka, definicje, biernik, dopełniacz, zdania i filozofia Hana.
+        170 pyta&#x0144; z 18 kategorii: s&#x0142;&#x00F3;wka, stopniowanie, biernik,<br>
+        narz&#x0119;dnik, celownik, czasowniki modalne i wi&#x0119;cej.
       </div>
-      <div class="time-hint">&#x23F1;&#xFE0F; Szacowany czas: ~25 min</div>
+      <div class="time-hint">&#x23F1;&#xFE0F; Szacowany czas: ~60&#x2013;90 min</div>
       <button class="btn btn-primary" onclick="startQuiz()">Zaczynamy!</button>
     </div>
   </div>
@@ -323,143 +323,12 @@ body {
 </div>
 
 <script>
-// ===== DATA =====
-
-const sections = [
-  {
-    id: 's1', emoji: '&#x1F1F5;&#x1F1F1;&#x27A1;&#xFE0F;&#x1F1EC;&#x1F1E7;', title: 'Słówka PL → EN',
-    desc: 'Wybierz poprawne tłumaczenie na angielski', type: 'mc', count: 10,
-    questions: shuffle([
-      { q: 'zmęczenie', answer: 'tiredness / fatigue', options: ['tiredness / fatigue', 'laziness', 'anxiety', 'weakness'] },
-      { q: 'wypalenie', answer: 'burnout', options: ['burnout', 'punishment', 'progress', 'competition'] },
-      { q: 'społeczeństwo', answer: 'society', options: ['society', 'discipline', 'obedience', 'silence'] },
-      { q: 'osiągnięcie', answer: 'achievement', options: ['achievement', 'creativity', 'reward', 'happiness'] },
-      { q: 'pułapka', answer: 'trap', options: ['trap', 'progress', 'reward', 'competition'] },
-      { q: 'samoeksploatacja', answer: 'self-exploitation', options: ['self-exploitation', 'discipline', 'punishment', 'laziness'] },
-      { q: 'więzienie', answer: 'prison', options: ['prison', 'silence', 'weakness', 'obedience'] },
-      { q: 'produktywność', answer: 'productivity', options: ['productivity', 'creativity', 'happiness', 'anxiety'] },
-      { q: 'odwaga', answer: 'courage', options: ['courage', 'laziness', 'silence', 'competition'] },
-      { q: 'kontemplacja', answer: 'contemplation', options: ['contemplation', 'discipline', 'reward', 'progress'] },
-      { q: 'zakaz', answer: 'prohibition', options: ['prohibition', 'punishment', 'weakness', 'happiness'] },
-      { q: 'wolność', answer: 'freedom', options: ['freedom', 'obedience', 'anxiety', 'silence'] },
-      { q: 'nuda', answer: 'boredom', options: ['boredom', 'laziness', 'creativity', 'competition'] },
-      { q: 'odpoczynek', answer: 'rest', options: ['rest', 'reward', 'progress', 'discipline'] },
-    ]).slice(0, 10)
-  },
-  {
-    id: 's2', emoji: '&#x1F1EC;&#x1F1E7;&#x27A1;&#xFE0F;&#x1F1F5;&#x1F1F1;', title: 'Słówka EN → PL',
-    desc: 'Wybierz poprawne tłumaczenie na polski', type: 'mc', count: 8,
-    questions: shuffle([
-      { q: 'advertisement', answer: 'reklama', options: ['reklama', 'relacja', 'recepta', 'reakcja'] },
-      { q: 'app', answer: 'aplikacja', options: ['aplikacja', 'atrakcja', 'akceptacja', 'adaptacja'] },
-      { q: 'philosopher', answer: 'filozof', options: ['filozof', 'filolog', 'filantrop', 'fizyk'] },
-      { q: 'boredom', answer: 'nuda', options: ['nuda', 'nuta', 'nowa', 'nauka'] },
-      { q: 'rest', answer: 'odpoczynek', options: ['odpoczynek', 'odporność', 'odpowiedź', 'odkrycie'] },
-      { q: 'freedom', answer: 'wolność', options: ['wolność', 'własność', 'wdzięczność', 'ważność'] },
-      { q: 'ban / prohibition', answer: 'zakaz', options: ['zakaz', 'zakon', 'zakres', 'zamek'] },
-      { q: 'courage', answer: 'odwaga', options: ['odwaga', 'odmowa', 'odraza', 'odpłata'] },
-    ]).slice(0, 8)
-  },
-  {
-    id: 's3', emoji: '&#x1F4D6;', title: 'Definicje po polsku',
-    desc: 'Wybierz słowo pasujące do definicji', type: 'mc', count: 8,
-    questions: shuffle([
-      { q: 'Choroba od zbyt dużo pracy — nie mogę już więcej', answer: 'wypalenie', options: ['wypalenie', 'zmęczenie', 'depresja', 'frustracja'] },
-      { q: 'Sytuacja, gdy sam się zmuszasz do pracy', answer: 'samoeksploatacja', options: ['samoeksploatacja', 'produktywność', 'ambicja', 'samodyscyplina'] },
-      { q: 'Kiedy ktoś mówi: nie wolno!', answer: 'zakaz', options: ['zakaz', 'kara', 'zasada', 'przepis'] },
-      { q: 'Spokojne myślenie bez celu i wyniku', answer: 'kontemplacja', options: ['kontemplacja', 'medytacja', 'koncentracja', 'kalkulacja'] },
-      { q: 'Coś, co wygląda dobrze, ale jest niebezpieczne', answer: 'pułapka', options: ['pułapka', 'nagroda', 'okazja', 'szansa'] },
-      { q: 'Miejsce, z którego nie możesz wyjść', answer: 'więzienie', options: ['więzienie', 'schronisko', 'mieszkanie', 'biuro'] },
-      { q: 'Gotowość do trudnych decyzji', answer: 'odwaga', options: ['odwaga', 'ambicja', 'determinacja', 'pewność'] },
-      { q: 'Stan, z którego rodzi się kreatywność', answer: 'nuda', options: ['nuda', 'złość', 'radość', 'stres'] },
-    ]).slice(0, 8)
-  },
-  {
-    id: 's4', emoji: '&#x270D;&#xFE0F;', title: 'Biernik — rzeczowniki',
-    desc: 'Wpisz biernik podanego rzeczownika', type: 'typein', count: 8,
-    questions: shuffle([
-      { q: 'telefon', answer: 'telefon', hint: 'Rzecz. męski nieżywotny → biernik = mianownik' },
-      { q: 'firma', answer: 'firmę', hint: 'Rzecz. żeński (-a → -ę)' },
-      { q: 'wróg', answer: 'wroga', hint: 'Rzecz. męski żywotny → biernik = dopełniacz (-a)' },
-      { q: 'książka', answer: 'książkę', hint: 'Rzecz. żeński (-a → -ę)' },
-      { q: 'zmęczenie', answer: 'zmęczenie', hint: 'Rzecz. nijaki → biernik = mianownik' },
-      { q: 'aplikacja', answer: 'aplikację', hint: 'Rzecz. żeński (-a → -ę)' },
-      { q: 'szef', answer: 'szefa', hint: 'Rzecz. męski żywotny → biernik = dopełniacz (-a)' },
-      { q: 'kariera', answer: 'karierę', hint: 'Rzecz. żeński (-a → -ę)' },
-    ]).slice(0, 8)
-  },
-  {
-    id: 's5', emoji: '&#x1F9E9;', title: 'Biernik z przymiotnikiem',
-    desc: 'Wpisz poprawną formę w bierniku', type: 'typein_sentence', count: 6,
-    questions: shuffle([
-      { q: 'Mam __________ (surowy szef)', answer: 'surowego szefa', hint: 'Męski żywotny → przymiotnik -ego + rzecz. -a' },
-      { q: 'Kupuję __________ (nowa aplikacja)', answer: 'nową aplikację', hint: 'Żeński → przymiotnik -ą + rzecz. -ę' },
-      { q: 'Czytam __________ (interesująca książka)', answer: 'interesującą książkę', hint: 'Żeński → przymiotnik -ą + rzecz. -ę' },
-      { q: 'Robię __________ (kolejny trening)', answer: 'kolejny trening', hint: 'Męski nieżywotny → biernik = mianownik' },
-      { q: 'Widzę __________ (stary dom)', answer: 'stary dom', hint: 'Męski nieżywotny → biernik = mianownik' },
-      { q: 'Proponuję __________ (proste rozwiązanie)', answer: 'proste rozwiązanie', hint: 'Nijaki → biernik = mianownik' },
-    ]).slice(0, 6)
-  },
-  {
-    id: 's6', emoji: '&#x26D4;', title: 'Negacja → Dopełniacz',
-    desc: 'Wpisz brakujące słowo w dopełniaczu', type: 'typein_sentence', count: 6,
-    questions: shuffle([
-      { q: 'Mam sukces → Nie mam __________', answer: 'sukcesu', hint: 'Męski → dopełniacz -u' },
-      { q: 'Widzę problem → Nie widzę __________', answer: 'problemu', hint: 'Męski → dopełniacz -u' },
-      { q: 'Czuję radość → Nie czuję __________', answer: 'radości', hint: 'Żeński (-ść → -ści)' },
-      { q: 'Mam czas → Nie mam __________', answer: 'czasu', hint: 'Męski → dopełniacz -u' },
-      { q: 'Widzę rozwiązanie → Nie widzę __________', answer: 'rozwiązania', hint: 'Nijaki (-ie → -ia)' },
-      { q: 'Mam telefon → Nie mam __________', answer: 'telefonu', hint: 'Męski → dopełniacz -u' },
-    ]).slice(0, 6)
-  },
-  {
-    id: 's7', emoji: '&#x1F4AC;', title: 'Uzupełnij zdanie',
-    desc: 'Wybierz słowo pasujące do kontekstu lekcji', type: 'mc', count: 8,
-    questions: [
-      { q: 'Han opisuje __________ świat.', answer: 'nowoczesny', options: ['nowoczesny', 'stary', 'mały', 'duży'] },
-      { q: 'Dawniej ludzie żyli w społeczeństwie __________.', answer: 'dyscypliny', options: ['dyscypliny', 'osiągnięć', 'zmęczenia', 'wolności'] },
-      { q: 'Dzisiaj żyjemy w społeczeństwie __________.', answer: 'osiągnięć', options: ['osiągnięć', 'dyscypliny', 'zakazów', 'wolności'] },
-      { q: 'Han nazywa to __________.', answer: 'samoeksploatacją', options: ['samoeksploatacją', 'wolnością', 'odwagą', 'nudą'] },
-      { q: 'Wypalenie to nie jest __________.', answer: 'słabość', options: ['słabość', 'choroba', 'problem', 'zmęczenie'] },
-      { q: 'Prawdziwy __________ nie ma celu.', answer: 'odpoczynek', options: ['odpoczynek', 'trening', 'projekt', 'plan'] },
-      { q: 'Nie robić nic to akt __________.', answer: 'odwagi', options: ['odwagi', 'słabości', 'zmęczenia', 'nudy'] },
-      { q: 'Człowiek nosi swoje __________ ze sobą — w głowie.', answer: 'więzienie', options: ['więzienie', 'telefon', 'zmęczenie', 'odpoczynek'] },
-    ]
-  },
-  {
-    id: 's8', emoji: '&#x1F9D0;', title: 'Filozofia Hana — Prawda czy Fałsz',
-    desc: 'Oceń, czy zdanie jest prawdziwe', type: 'tf', count: 8,
-    questions: shuffle([
-      { q: 'Han urodził się w Niemczech.', answer: false, explanation: 'Han urodził się w Korei Południowej.' },
-      { q: 'W społeczeństwie dyscypliny ludzie mogli protestować.', answer: true, explanation: 'Tak — kiedy wróg jest na zewnątrz, można walczyć.' },
-      { q: 'Samoeksploatacja to kiedy szef zmusza cię do pracy.', answer: false, explanation: 'Samoeksploatacja = sam siebie zmuszasz do pracy.' },
-      { q: 'Wypalenie to choroba słabych ludzi.', answer: false, explanation: 'To choroba systemu, nie osoby.' },
-      { q: 'Han proponuje odpoczynek, żeby potem lepiej pracować.', answer: false, explanation: 'Han mówi o odpoczynku BEZ celu — nie dla produktywności.' },
-      { q: 'Kontemplacja to spokojne myślenie bez celu.', answer: true, explanation: 'Dokładnie — myślenie bez wyniku i presji.' },
-      { q: 'W społeczeństwie osiągnięć winisz siebie za brak sukcesu.', answer: true, explanation: 'Tak — nie ma zewnętrznego wroga, więc winisz siebie.' },
-      { q: 'Han pisze po koreańsku.', answer: false, explanation: 'Han pisze po niemiecku.' },
-    ]).slice(0, 8)
-  }
-];
-
-// ===== STATE =====
-let currentSection = 0;
-let currentQuestion = 0;
-let sectionScores = [];
-let totalCorrect = 0;
-let totalQuestions = 0;
-let startTime = null;
-let timerInterval = null;
-let answered = false;
-let allQuestions = [];
-let flatIndex = 0;
-
 // ===== HELPERS =====
 function shuffle(arr) {
-  const a = [...arr];
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [a[i], a[j]] = [a[j], a[i]];
+  var a = arr.slice();
+  for (var i = a.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var tmp = a[i]; a[i] = a[j]; a[j] = tmp;
   }
   return a;
 }
@@ -468,24 +337,417 @@ function normalize(s) {
   return s.trim().toLowerCase();
 }
 
+function stripDiacritics(s) {
+  return s
+    .replace(/[ąĄ]/g, 'a')
+    .replace(/[ćĆ]/g, 'c')
+    .replace(/[ęĘ]/g, 'e')
+    .replace(/[łŁ]/g, 'l')
+    .replace(/[ńŃ]/g, 'n')
+    .replace(/[óÓ]/g, 'o')
+    .replace(/[śŚ]/g, 's')
+    .replace(/[źŹ]/g, 'z')
+    .replace(/[żŻ]/g, 'z');
+}
+
+function escapeAttr(s) {
+  return s.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+}
+
+// ===== DATA =====
+
+var sections = [
+  // --- SECTION 1: PL -> EN ---
+  {
+    id: 's1', emoji: '\u{1F1F5}\u{1F1F1}\u27A1\uFE0F\u{1F1EC}\u{1F1E7}', title: 'S\u0142\u00F3wka PL \u2192 EN',
+    desc: 'Wybierz poprawne t\u0142umaczenie na angielski', type: 'mc', count: 14,
+    questions: shuffle([
+      { q: 'zm\u0119czenie', answer: 'tiredness / fatigue', options: ['tiredness / fatigue', 'laziness', 'anxiety', 'weakness'] },
+      { q: 'wypalenie', answer: 'burnout', options: ['burnout', 'punishment', 'depression', 'competition'] },
+      { q: 'pu\u0142apka', answer: 'trap', options: ['trap', 'progress', 'reward', 'adventure'] },
+      { q: 'samoeksploatacja', answer: 'self-exploitation', options: ['self-exploitation', 'self-discipline', 'self-improvement', 'self-defense'] },
+      { q: 'oligarchia', answer: 'rule of the few', options: ['rule of the few', 'democracy', 'bureaucracy', 'monarchy'] },
+      { q: 'w\u0142adza', answer: 'power', options: ['power', 'weakness', 'law', 'freedom'] },
+      { q: 'przetrwanie', answer: 'survival', options: ['survival', 'suffering', 'competition', 'victory'] },
+      { q: 'uczestnictwo', answer: 'participation', options: ['participation', 'punishment', 'progress', 'entertainment'] },
+      { q: 'cnota', answer: 'virtue', options: ['virtue', 'sin', 'pride', 'talent'] },
+      { q: 'tch\u00F3rz', answer: 'coward', options: ['coward', 'hero', 'liar', 'traitor'] },
+      { q: 'hojno\u015B\u0107', answer: 'generosity', options: ['generosity', 'greed', 'jealousy', 'poverty'] },
+      { q: 'up\u00F3r', answer: 'stubbornness', options: ['stubbornness', 'flexibility', 'weakness', 'strength'] },
+      { q: 'zdrada', answer: 'betrayal', options: ['betrayal', 'loyalty', 'honesty', 'compromise'] },
+      { q: 'kontemplacja', answer: 'contemplation', options: ['contemplation', 'competition', 'concentration', 'calculation'] },
+      { q: 'okrucie\u0144stwo', answer: 'cruelty', options: ['cruelty', 'kindness', 'justice', 'mercy'] },
+      { q: 'fanatyzm', answer: 'fanaticism', options: ['fanaticism', 'enthusiasm', 'patriotism', 'optimism'] },
+      { q: 'przejrzysty', answer: 'clear / transparent', options: ['clear / transparent', 'dark', 'dirty', 'deep'] },
+      { q: 'przyroda', answer: 'nature', options: ['nature', 'culture', 'science', 'technology'] },
+      { q: 'stromy', answer: 'steep', options: ['steep', 'flat', 'wide', 'narrow'] },
+      { q: 'szczyt', answer: 'peak / summit', options: ['peak / summit', 'valley', 'river', 'forest'] }
+    ]).slice(0, 14)
+  },
+
+  // --- SECTION 2: Write in Polish ---
+  {
+    id: 's2', emoji: '\u270D\uFE0F', title: 'Napisz po polsku',
+    desc: 'Przet\u0142umacz s\u0142owo na j\u0119zyk polski \u2014 wpisz poprawnie!',
+    type: 'typein', count: 12,
+    prompt: 'Przet\u0142umacz na polski: {word}',
+    questions: shuffle([
+      { q: 'society', answer: 'spo\u0142ecze\u0144stwo', hint: 'od "spo\u0142eczny" \u2014 -e\u0144stwo' },
+      { q: 'achievement', answer: 'osi\u0105gni\u0119cie', hint: 'od "osi\u0105gn\u0105\u0107" \u2014 -ni\u0119cie' },
+      { q: 'freedom', answer: 'wolno\u015B\u0107', hint: 'od "wolny" \u2014 -o\u015B\u0107' },
+      { q: 'courage', answer: 'odwaga', hint: 'od "odwa\u017Cny"' },
+      { q: 'rest', answer: 'odpoczynek', hint: 'od "odpocz\u0105\u0107"' },
+      { q: 'boredom', answer: 'nuda', hint: 'kr\u00F3tkie s\u0142owo od "nudzi\u0107 si\u0119"' },
+      { q: 'leader', answer: 'lider', hint: 'tak samo jak angielskie "leader"' },
+      { q: 'organization', answer: 'organizacja', hint: '-tion \u2192 -cja' },
+      { q: 'betrayal', answer: 'zdrada', hint: 'od "zdradzi\u0107"' },
+      { q: 'cruelty', answer: 'okrucie\u0144stwo', hint: 'od "okrutny" \u2014 -e\u0144stwo' },
+      { q: 'coward', answer: 'tch\u00F3rz', hint: 'pami\u0119taj: t-c-h-\u00F3-r-z' },
+      { q: 'compromise', answer: 'kompromis', hint: 'podobnie do rosyjskiego' },
+      { q: 'stubbornness', answer: 'up\u00F3r', hint: 'kr\u00F3tkie s\u0142owo z "\u00F3"' },
+      { q: 'participation', answer: 'uczestnictwo', hint: 'od "uczestnik"' },
+      { q: 'trap', answer: 'pu\u0142apka', hint: 'p-u-\u0142-a-p-k-a' },
+      { q: 'rule / principle', answer: 'zasada', hint: 'od "zasadniczy"' }
+    ]).slice(0, 12)
+  },
+
+  // --- SECTION 3: Definitions in Polish ---
+  {
+    id: 's3', emoji: '\u{1F4D6}', title: 'Definicje po polsku',
+    desc: 'Wybierz s\u0142owo pasuj\u0105ce do definicji', type: 'mc', count: 10,
+    questions: shuffle([
+      { q: 'Choroba od zbyt du\u017Co pracy \u2014 nie mog\u0119 ju\u017C wi\u0119cej', answer: 'wypalenie', options: ['wypalenie', 'zm\u0119czenie', 'depresja', 'frustracja'] },
+      { q: 'Sytuacja, gdy sam si\u0119 zmuszasz do pracy', answer: 'samoeksploatacja', options: ['samoeksploatacja', 'produktywno\u015B\u0107', 'ambicja', 'dyscyplina'] },
+      { q: 'Rz\u0105dy nielicznych', answer: 'oligarchia', options: ['oligarchia', 'demokracja', 'monarchia', 'anarchia'] },
+      { q: 'Dobra cecha charakteru; post\u0119powanie zgodne z zasadami', answer: 'cnota', options: ['cnota', 'talent', 'm\u0105dro\u015B\u0107', 'sukces'] },
+      { q: 'Osoba, kt\u00F3ra boi si\u0119 i unika trudnych sytuacji', answer: 'tch\u00F3rz', options: ['tch\u00F3rz', 'pesymista', 'leniuch', 'egoista'] },
+      { q: 'Z\u0142amanie zaufania', answer: 'zdrada', options: ['zdrada', 'k\u0142\u00F3tnia', 'k\u0142amstwo', 'pomy\u0142ka'] },
+      { q: 'Spokojne my\u015Blenie bez celu i wyniku', answer: 'kontemplacja', options: ['kontemplacja', 'kalkulacja', 'medytacja', 'planowanie'] },
+      { q: 'Pozosta\u0107 przy \u017Cyciu; nie upa\u015B\u0107', answer: 'przetrwanie', options: ['przetrwanie', 'wygrana', 'ucieczka', 'sukces'] },
+      { q: 'Brak elastyczno\u015Bci; niemo\u017Cno\u015B\u0107 dopasowania si\u0119', answer: 'sztywno\u015B\u0107', options: ['sztywno\u015B\u0107', 'si\u0142a', 'odwaga', 'stabilno\u015B\u0107'] },
+      { q: 'Ch\u0119\u0107 dzielenia si\u0119 pieni\u0119dzmi, czasem, pomoc\u0105', answer: 'hojno\u015B\u0107', options: ['hojno\u015B\u0107', 'bogactwo', 'skromno\u015B\u0107', 'ambicja'] },
+      { q: 'Celowe zadawanie b\u00F3lu; brak wsp\u00F3\u0142czucia', answer: 'okrucie\u0144stwo', options: ['okrucie\u0144stwo', 'si\u0142a', 'zemsta', 'agresja'] },
+      { q: 'M\u00F3wi\u0107 nieprawd\u0119 celowo', answer: 'k\u0142ama\u0107', options: ['k\u0142ama\u0107', 'milcze\u0107', 'zapomina\u0107', 'przeprasza\u0107'] }
+    ]).slice(0, 10)
+  },
+
+  // --- SECTION 4: Comparative ---
+  {
+    id: 's4', emoji: '\u{1F4CF}', title: 'Stopniowanie \u2014 stopie\u0144 wy\u017Cszy',
+    desc: 'Wpisz form\u0119 stopnia wy\u017Cszego',
+    type: 'typein', count: 10,
+    prompt: 'Stopie\u0144 wy\u017Cszy od: {word}',
+    questions: shuffle([
+      { q: 'wysoki', answer: 'wy\u017Cszy', hint: '-oki \u2192 -\u017Cszy (k \u2192 \u017C)' },
+      { q: 'niski', answer: 'ni\u017Cszy', hint: '-ski \u2192 -\u017Cszy (sk \u2192 \u017C)' },
+      { q: 'g\u0142\u0119boki', answer: 'g\u0142\u0119bszy', hint: '-oki odpada' },
+      { q: 'pi\u0119kny', answer: 'pi\u0119kniejszy', hint: '-ny \u2192 -niejszy' },
+      { q: 'trudny', answer: 'trudniejszy', hint: '-ny \u2192 -niejszy' },
+      { q: '\u0142atwy', answer: '\u0142atwiejszy', hint: '-wy \u2192 -wiejszy' },
+      { q: 'popularny', answer: 'popularniejszy', hint: '-ny \u2192 -niejszy' },
+      { q: 'du\u017Cy', answer: 'wi\u0119kszy', hint: 'NIEREGULARNY! Trzeba zapami\u0119ta\u0107' },
+      { q: 'ma\u0142y', answer: 'mniejszy', hint: 'NIEREGULARNY! Trzeba zapami\u0119ta\u0107' },
+      { q: 'dobry', answer: 'lepszy', hint: 'NIEREGULARNY! Trzeba zapami\u0119ta\u0107' },
+      { q: 'z\u0142y', answer: 'gorszy', hint: 'NIEREGULARNY! Trzeba zapami\u0119ta\u0107' },
+      { q: 'szybki', answer: 'szybszy', hint: '-ki \u2192 -szy' }
+    ]).slice(0, 10)
+  },
+
+  // --- SECTION 5: Superlative ---
+  {
+    id: 's5', emoji: '\u{1F3C6}', title: 'Stopniowanie \u2014 stopie\u0144 najwy\u017Cszy',
+    desc: 'Wpisz form\u0119 stopnia najwy\u017Cszego',
+    type: 'typein', count: 8,
+    prompt: 'Stopie\u0144 najwy\u017Cszy od: {word}',
+    questions: shuffle([
+      { q: 'pi\u0119kny', answer: 'najpi\u0119kniejszy', hint: 'NAJ- + pi\u0119kniejszy' },
+      { q: 'trudny', answer: 'najtrudniejszy', hint: 'NAJ- + trudniejszy' },
+      { q: 'wysoki', answer: 'najwy\u017Cszy', hint: 'NAJ- + wy\u017Cszy' },
+      { q: 'du\u017Cy', answer: 'najwi\u0119kszy', hint: 'NIEREG. NAJ- + wi\u0119kszy' },
+      { q: 'dobry', answer: 'najlepszy', hint: 'NIEREG. NAJ- + lepszy' },
+      { q: 'z\u0142y', answer: 'najgorszy', hint: 'NIEREG. NAJ- + gorszy' },
+      { q: 'popularny', answer: 'najpopularniejszy', hint: 'NAJ- + popularniejszy' },
+      { q: 'g\u0142\u0119boki', answer: 'najg\u0142\u0119bszy', hint: 'NAJ- + g\u0142\u0119bszy' },
+      { q: '\u0142atwy', answer: 'naj\u0142atwiejszy', hint: 'NAJ- + \u0142atwiejszy' },
+      { q: 'ma\u0142y', answer: 'najmniejszy', hint: 'NIEREG. NAJ- + mniejszy' }
+    ]).slice(0, 8)
+  },
+
+  // --- SECTION 6: Comparisons in sentences ---
+  {
+    id: 's6', emoji: '\u2696\uFE0F', title: 'Por\u00F3wnania w zdaniu',
+    desc: 'Wpisz poprawn\u0105 form\u0119 przymiotnika',
+    type: 'typein_sentence', count: 8,
+    questions: [
+      { q: 'Giewont jest __________ (niski) ni\u017C Rysy.', answer: 'ni\u017Cszy', hint: 'niski \u2192 ni\u017Cszy (rodzaj m\u0119ski)' },
+      { q: 'Nied\u017Awied\u017A jest __________ (du\u017Cy) ni\u017C kozica.', answer: 'wi\u0119kszy', hint: 'du\u017Cy \u2192 wi\u0119kszy \u2014 NIEREGULARNY (r. m\u0119ski)' },
+      { q: '\u015Awistak jest __________ (ma\u0142y) ni\u017C kozica.', answer: 'mniejszy', hint: 'ma\u0142y \u2192 mniejszy \u2014 NIEREGULARNY (r. m\u0119ski)' },
+      { q: 'Wielki Staw jest __________ (g\u0142\u0119boki) ni\u017C Morskie Oko.', answer: 'g\u0142\u0119bszy', hint: 'g\u0142\u0119boki \u2192 g\u0142\u0119bszy (r. m\u0119ski)' },
+      { q: 'Tatry to __________ (wysoki) g\u00F3ry w Polsce.', answer: 'najwy\u017Csze', hint: 'stopie\u0144 najwy\u017Cszy + l.mn. \u2192 najwy\u017Csze' },
+      { q: 'Morskie Oko to __________ (s\u0142ynny) jezioro.', answer: 'najs\u0142ynniejsze', hint: 'stopie\u0144 najwy\u017Cszy + r. nijaki \u2192 najs\u0142ynniejsze' },
+      { q: 'Nied\u017Awied\u017A jest __________ (du\u017Cy) zwierz\u0119ciem w Tatrach.', answer: 'najwi\u0119kszym', hint: 'stopie\u0144 najwy\u017Cszy + narz\u0119dnik \u2192 najwi\u0119kszym' },
+      { q: 'Ta lekcja by\u0142a __________ (trudny) ni\u017C poprzednia.', answer: 'trudniejsza', hint: 'trudniejszy w r. \u017Ce\u0144skim \u2192 trudniejsza' }
+    ]
+  },
+
+  // --- SECTION 7: Accusative nouns ---
+  {
+    id: 's7', emoji: '\u{1F3AF}', title: 'Biernik \u2014 rzeczowniki',
+    desc: 'Wpisz form\u0119 biernika (kogo? co?)',
+    type: 'typein', count: 10,
+    prompt: 'Biernik od: {word}',
+    questions: shuffle([
+      { q: 'telefon', answer: 'telefon', hint: 'M\u0119ski nie\u017Cywotny \u2192 biernik = mianownik' },
+      { q: 'firma', answer: 'firm\u0119', hint: '\u017Be\u0144ski: -a \u2192 -\u0119' },
+      { q: 'wr\u00F3g', answer: 'wroga', hint: 'M\u0119ski \u017Cywotny \u2192 biernik = dope\u0142niacz (-a)' },
+      { q: 'ksi\u0105\u017Cka', answer: 'ksi\u0105\u017Ck\u0119', hint: '\u017Be\u0144ski: -a \u2192 -\u0119' },
+      { q: 'zm\u0119czenie', answer: 'zm\u0119czenie', hint: 'Nijaki \u2192 biernik = mianownik' },
+      { q: 'aplikacja', answer: 'aplikacj\u0119', hint: '\u017Be\u0144ski: -a \u2192 -\u0119' },
+      { q: 'szef', answer: 'szefa', hint: 'M\u0119ski \u017Cywotny \u2192 biernik = dope\u0142niacz (-a)' },
+      { q: 'kariera', answer: 'karier\u0119', hint: '\u017Be\u0144ski: -a \u2192 -\u0119' },
+      { q: 'projekt', answer: 'projekt', hint: 'M\u0119ski nie\u017Cywotny \u2192 biernik = mianownik' },
+      { q: 'lider', answer: 'lidera', hint: 'M\u0119ski \u017Cywotny \u2192 biernik = dope\u0142niacz (-a)' },
+      { q: 'organizacja', answer: 'organizacj\u0119', hint: '\u017Be\u0144ski: -a \u2192 -\u0119' },
+      { q: 'reklama', answer: 'reklam\u0119', hint: '\u017Be\u0144ski: -a \u2192 -\u0119' }
+    ]).slice(0, 10)
+  },
+
+  // --- SECTION 8: Accusative with adjective ---
+  {
+    id: 's8', emoji: '\u{1F517}', title: 'Biernik z przymiotnikiem',
+    desc: 'Wpisz przymiotnik + rzeczownik w bierniku',
+    type: 'typein_sentence', count: 8,
+    questions: [
+      { q: 'Mam __________ (surowy szef).', answer: 'surowego szefa', hint: 'M. \u017Cywotny: przymiotnik -ego + rzeczownik -a' },
+      { q: 'Kupuj\u0119 __________ (nowa aplikacja).', answer: 'now\u0105 aplikacj\u0119', hint: '\u017Be\u0144ski: przymiotnik -\u0105 + rzeczownik -\u0119' },
+      { q: 'Czytam __________ (interesuj\u0105ca ksi\u0105\u017Cka).', answer: 'interesuj\u0105c\u0105 ksi\u0105\u017Ck\u0119', hint: '\u017Be\u0144ski: przymiotnik -\u0105 + rzeczownik -\u0119' },
+      { q: 'Robi\u0119 __________ (kolejny trening).', answer: 'kolejny trening', hint: 'M. nie\u017Cywotny \u2192 biernik = mianownik' },
+      { q: 'Widz\u0119 __________ (stary dom).', answer: 'stary dom', hint: 'M. nie\u017Cywotny \u2192 biernik = mianownik' },
+      { q: 'Znam __________ (dobry lider).', answer: 'dobrego lidera', hint: 'M. \u017Cywotny: przymiotnik -ego + rzeczownik -a' },
+      { q: 'Proponuj\u0119 __________ (proste rozwi\u0105zanie).', answer: 'proste rozwi\u0105zanie', hint: 'Nijaki \u2192 biernik = mianownik' },
+      { q: 'Kupuj\u0119 __________ (polska ksi\u0105\u017Cka).', answer: 'polsk\u0105 ksi\u0105\u017Ck\u0119', hint: '\u017Be\u0144ski: przymiotnik -\u0105 + rzeczownik -\u0119' }
+    ]
+  },
+
+  // --- SECTION 9: Negation -> Genitive ---
+  {
+    id: 's9', emoji: '\u26D4', title: 'Negacja \u2192 Dope\u0142niacz',
+    desc: 'Zmie\u0144 zdanie na przecz\u0105ce \u2014 wpisz brakuj\u0105ce s\u0142owo',
+    type: 'typein_sentence', count: 8,
+    questions: [
+      { q: 'Mam sukces \u2192 Nie mam __________.', answer: 'sukcesu', hint: 'M\u0119ski \u2192 dope\u0142niacz -u' },
+      { q: 'Widz\u0119 problem \u2192 Nie widz\u0119 __________.', answer: 'problemu', hint: 'M\u0119ski \u2192 dope\u0142niacz -u' },
+      { q: 'Czuj\u0119 rado\u015B\u0107 \u2192 Nie czuj\u0119 __________.', answer: 'rado\u015Bci', hint: '\u017Be\u0144ski: -\u015B\u0107 \u2192 -\u015Bci' },
+      { q: 'Mam czas \u2192 Nie mam __________.', answer: 'czasu', hint: 'M\u0119ski \u2192 dope\u0142niacz -u' },
+      { q: 'Widz\u0119 rozwi\u0105zanie \u2192 Nie widz\u0119 __________.', answer: 'rozwi\u0105zania', hint: 'Nijaki: -ie \u2192 -ia' },
+      { q: 'Mam telefon \u2192 Nie mam __________.', answer: 'telefonu', hint: 'M\u0119ski \u2192 dope\u0142niacz -u' },
+      { q: 'Znam odpowied\u017A \u2192 Nie znam __________.', answer: 'odpowiedzi', hint: '\u017Be\u0144ski: -\u017A \u2192 -dzi' },
+      { q: 'Mam pomys\u0142 \u2192 Nie mam __________.', answer: 'pomys\u0142u', hint: 'M\u0119ski \u2192 dope\u0142niacz -u' }
+    ]
+  },
+
+  // --- SECTION 10: Instrumental nouns ---
+  {
+    id: 's10', emoji: '\u{1F6E0}\uFE0F', title: 'Narz\u0119dnik \u2014 rzeczowniki',
+    desc: 'Wpisz form\u0119 narz\u0119dnika (kim? czym?)',
+    type: 'typein', count: 10,
+    prompt: 'Narz\u0119dnik od: {word}',
+    questions: shuffle([
+      { q: 'socjolog', answer: 'socjologiem', hint: 'M\u0119ski: + -iem' },
+      { q: 'organizacja', answer: 'organizacj\u0105', hint: '\u017Be\u0144ski: -a \u2192 -\u0105' },
+      { q: 'lider', answer: 'liderem', hint: 'M\u0119ski: + -em' },
+      { q: 'proces', answer: 'procesem', hint: 'M\u0119ski: + -em' },
+      { q: 'rower', answer: 'rowerem', hint: 'M\u0119ski: + -em' },
+      { q: 'oligarchia', answer: 'oligarchi\u0105', hint: '\u017Be\u0144ski: -a \u2192 -\u0105' },
+      { q: 'zbawiciel', answer: 'zbawicielem', hint: 'M\u0119ski: + -em' },
+      { q: 'socjalista', answer: 'socjalist\u0105', hint: 'M\u0119ski na -a \u2192 -\u0105 (jak \u017Ce\u0144ski!)' },
+      { q: 'prawo', answer: 'prawem', hint: 'Nijaki: -o \u2192 -em' },
+      { q: 'partia', answer: 'parti\u0105', hint: '\u017Be\u0144ski: -a \u2192 -\u0105' },
+      { q: 'kobieta', answer: 'kobiet\u0105', hint: '\u017Be\u0144ski: -a \u2192 -\u0105' },
+      { q: 'miasto', answer: 'miastem', hint: 'Nijaki: -o \u2192 -em' }
+    ]).slice(0, 10)
+  },
+
+  // --- SECTION 11: Instrumental in sentences ---
+  {
+    id: 's11', emoji: '\u{1F3F7}\uFE0F', title: 'Kim? Czym? \u2014 w zdaniu',
+    desc: 'Uzupe\u0142nij zdanie form\u0105 narz\u0119dnika',
+    type: 'typein_sentence', count: 8,
+    questions: [
+      { q: 'Michels by\u0142 __________ (cz\u0142onek) SPD.', answer: 'cz\u0142onkiem', hint: 'cz\u0142onek \u2192 cz\u0142onkiem (M. + -iem)' },
+      { q: 'Organizacja staje si\u0119 __________ (oligarchia).', answer: 'oligarchi\u0105', hint: '\u017Be\u0144ski: -a \u2192 -\u0105' },
+      { q: 'Demokracja jest __________ (proces).', answer: 'procesem', hint: 'M\u0119ski: + -em' },
+      { q: 'Lider staje si\u0119 __________ (zbawiciel).', answer: 'zbawicielem', hint: 'M\u0119ski: + -em' },
+      { q: 'Han jest __________ (filozof).', answer: 'filozofem', hint: 'M\u0119ski: + -em' },
+      { q: 'SPD by\u0142a najwi\u0119ksz\u0105 __________ (partia).', answer: 'parti\u0105', hint: '\u017Be\u0144ski: -a \u2192 -\u0105' },
+      { q: 'Rewolucjoni\u015Bci staj\u0105 si\u0119 __________ (konserwatyści).', answer: 'konserwatystami', hint: 'Liczba mnoga: + -ami' },
+      { q: 'Demokracja jest jak __________ (rower).', answer: 'rowerem', hint: 'M\u0119ski: + -em' }
+    ]
+  },
+
+  // --- SECTION 12: Modal verbs conjugation ---
+  {
+    id: 's12', emoji: '\u{1F504}', title: 'Czasowniki modalne \u2014 koniugacja',
+    desc: 'Wybierz poprawn\u0105 form\u0119 czasownika',
+    type: 'mc', count: 10,
+    questions: [
+      { q: '(musie\u0107, ja) __________ i\u015B\u0107 do pracy.', answer: 'musz\u0119', options: ['musz\u0119', 'musisz', 'musi', 'musimy'] },
+      { q: '(m\u00F3c, ty) __________ mi pom\u00F3c?', answer: 'mo\u017Cesz', options: ['mo\u017Cesz', 'mog\u0119', 'mo\u017Ce', 'mog\u0105'] },
+      { q: '(chcie\u0107, my) __________ porozmawia\u0107.', answer: 'chcemy', options: ['chcemy', 'chc\u0119', 'chcesz', 'chc\u0105'] },
+      { q: '(musie\u0107, oni) __________ negocjowa\u0107.', answer: 'musz\u0105', options: ['musz\u0105', 'musz\u0119', 'musi', 'musicie'] },
+      { q: '(m\u00F3c, wy) __________ przyj\u015B\u0107 jutro?', answer: 'mo\u017Cecie', options: ['mo\u017Cecie', 'mog\u0119', 'mo\u017Cesz', 'mog\u0105'] },
+      { q: '(chcie\u0107, ona) __________ zosta\u0107 lekarzem.', answer: 'chce', options: ['chce', 'chc\u0119', 'chcemy', 'chc\u0105'] },
+      { q: '(powinien, ja-m\u0119\u017Cczyzna) __________ pom\u00F3c.', answer: 'powinienem', options: ['powinienem', 'powinnam', 'powinien', 'powinni\u015Bmy'] },
+      { q: '(powinien, ja-kobieta) __________ pom\u00F3c.', answer: 'powinnam', options: ['powinnam', 'powinienem', 'powinna', 'powinno'] },
+      { q: '(powinien, ona) __________ wybaczy\u0107.', answer: 'powinna', options: ['powinna', 'powinien', 'powinnam', 'powinno'] },
+      { q: '(m\u00F3c, ja) __________ to zrobi\u0107.', answer: 'mog\u0119', options: ['mog\u0119', 'mo\u017Cesz', 'mo\u017Ce', 'mog\u0105'] }
+    ]
+  },
+
+  // --- SECTION 13: Musieć vs Powinien ---
+  {
+    id: 's13', emoji: '\u2696\uFE0F', title: 'Musie\u0107 czy powinien?',
+    desc: 'Wybierz: przymus (musie\u0107) czy rada (powinien)?',
+    type: 'mc', count: 8,
+    questions: [
+      { q: '__________ i\u015B\u0107 do pracy o \u00F3smej \u2014 szef czeka. (przymus czy rada?)', answer: 'Musz\u0119', options: ['Musz\u0119', 'Powinienem'] },
+      { q: '__________ cz\u0119\u015Bciej dzwoni\u0107 do babci. (przymus czy rada?)', answer: 'Powinienem', options: ['Powinienem', 'Musz\u0119'] },
+      { q: 'Samolot odlatuje za godzin\u0119 \u2014 __________ jecha\u0107! (przymus czy rada?)', answer: 'musz\u0119', options: ['musz\u0119', 'powinienem'] },
+      { q: '__________ wi\u0119cej czyta\u0107 po polsku. (przymus czy rada?)', answer: 'Powinienem', options: ['Powinienem', 'Musz\u0119'] },
+      { q: 'Mama jest bardzo chora \u2014 __________ zosta\u0107 w domu. (przymus czy rada?)', answer: 'musz\u0119', options: ['musz\u0119', 'powinienem'] },
+      { q: '__________ cz\u0119\u015Bciej \u0107wiczy\u0107 sport. (przymus czy rada?)', answer: 'Powinienem', options: ['Powinienem', 'Musz\u0119'] },
+      { q: 'Jutro egzamin \u2014 __________ si\u0119 uczy\u0107! (przymus czy rada?)', answer: 'musz\u0119', options: ['musz\u0119', 'powinienem'] },
+      { q: '__________ przeprosi\u0107 koleg\u0119 \u2014 powiedzia\u0142em co\u015B z\u0142ego. (przymus czy rada?)', answer: 'Powinienem', options: ['Powinienem', 'Musz\u0119'] }
+    ]
+  },
+
+  // --- SECTION 14: Trzeba / Można / Wolno / Warto ---
+  {
+    id: 's14', emoji: '\u{1F513}', title: 'Trzeba / Mo\u017Cna / Wolno / Warto',
+    desc: 'Wybierz poprawn\u0105 konstrukcj\u0119 bezosobow\u0105',
+    type: 'mc', count: 8,
+    questions: [
+      { q: '__________ tu pali\u0107! (zakaz)', answer: 'Nie wolno', options: ['Nie wolno', 'Nie trzeba', 'Nie mo\u017Cna', 'Nie nale\u017Cy'] },
+      { q: '__________ negocjowa\u0107 \u2014 drzwi s\u0105 otwarte. (mo\u017Cliwo\u015B\u0107)', answer: 'Mo\u017Cna', options: ['Mo\u017Cna', 'Trzeba', 'Wolno', 'Nale\u017Cy'] },
+      { q: 'Kant m\u00F3wi\u0142: nie __________ k\u0142ama\u0107. Nigdy. (zakaz moralny)', answer: 'wolno', options: ['wolno', 'trzeba', 'mo\u017Cna', 'nale\u017Cy'] },
+      { q: '__________ pom\u00F3c mamie \u2014 jest sama. (konieczno\u015B\u0107)', answer: 'Trzeba', options: ['Trzeba', 'Mo\u017Cna', 'Wolno', 'Warto'] },
+      { q: '__________ szanowa\u0107 starszych. (formalnie)', answer: 'Nale\u017Cy', options: ['Nale\u017Cy', 'Trzeba', 'Mo\u017Cna', 'Wolno'] },
+      { q: '__________ spr\u00F3bowa\u0107 t\u0119 restauracj\u0119! (op\u0142aca si\u0119)', answer: 'Warto', options: ['Warto', 'Trzeba', 'Nale\u017Cy', 'Wolno'] },
+      { q: 'W muzeum nie __________ fotografowa\u0107. (zakaz)', answer: 'wolno', options: ['wolno', 'trzeba', 'mo\u017Cna', 'nale\u017Cy'] },
+      { q: '__________ uczy\u0107 si\u0119 polskiego \u2014 to pi\u0119kny j\u0119zyk. (op\u0142aca si\u0119)', answer: 'Warto', options: ['Warto', 'Trzeba', 'Nale\u017Cy', 'Mo\u017Cna'] }
+    ]
+  },
+
+  // --- SECTION 15: Dative nouns ---
+  {
+    id: 's15', emoji: '\u{1F4EC}', title: 'Celownik \u2014 rzeczowniki',
+    desc: 'Wpisz form\u0119 celownika (komu? czemu?)',
+    type: 'typein', count: 10,
+    prompt: 'Celownik od: {word}',
+    questions: shuffle([
+      { q: 'brat', answer: 'bratu', hint: 'Wyj\u0105tek! -u zamiast -owi' },
+      { q: 'mama', answer: 'mamie', hint: '\u017Be\u0144ski: -a \u2192 -ie (m \u2192 mi)' },
+      { q: 'nauczyciel', answer: 'nauczycielowi', hint: 'M\u0119ski standardowy: + -owi' },
+      { q: 'siostra', answer: 'siostrze', hint: '\u017Be\u0144ski: -a \u2192 -e (r \u2192 rz)' },
+      { q: 'kolega', answer: 'koledze', hint: 'M\u0119ski na -a: (g \u2192 dz + e)' },
+      { q: 'przyjaciel', answer: 'przyjacielowi', hint: 'M\u0119ski standardowy: + -owi' },
+      { q: 'ojciec', answer: 'ojcu', hint: 'Wyj\u0105tek! -u zamiast -owi' },
+      { q: 'kole\u017Canka', answer: 'kole\u017Cance', hint: '\u017Be\u0144ski: -a \u2192 -e (k \u2192 c)' },
+      { q: 'dziecko', answer: 'dziecku', hint: 'Nijaki: -o \u2192 -u' },
+      { q: 'syn', answer: 'synowi', hint: 'M\u0119ski standardowy: + -owi' },
+      { q: 'pani', answer: 'pani', hint: '\u017Be\u0144ski mi\u0119kki: bez zmiany!' },
+      { q: 'Oleg', answer: 'Olegowi', hint: 'M\u0119ski standardowy: + -owi' }
+    ]).slice(0, 10)
+  },
+
+  // --- SECTION 16: Dative pronouns ---
+  {
+    id: 's16', emoji: '\u{1F464}', title: 'Celownik \u2014 zaimki osobowe',
+    desc: 'Zamie\u0144 rzeczownik na zaimek w celowniku',
+    type: 'mc', count: 8,
+    questions: [
+      { q: 'Pomagam bratu. \u2192 Pomagam __________.', answer: 'mu', options: ['mu', 'mi', 'ci', 'jej'] },
+      { q: 'M\u00F3wi\u0119 prawd\u0119 mamie. \u2192 M\u00F3wi\u0119 __________ prawd\u0119.', answer: 'jej', options: ['jej', 'mu', 'ci', 'im'] },
+      { q: 'Dzi\u0119kuj\u0119 nauczycielowi i nauczycielce. \u2192 Dzi\u0119kuj\u0119 __________.', answer: 'im', options: ['im', 'mu', 'jej', 'nam'] },
+      { q: 'Ufam mojej \u017Conie. \u2192 Ufam __________.', answer: 'jej', options: ['jej', 'mu', 'ci', 'im'] },
+      { q: 'Nie przeszkadzaj siostrze! \u2192 Nie przeszkadzaj __________!', answer: 'jej', options: ['jej', 'mu', 'ci', 'im'] },
+      { q: 'Wybaczam Olegowi. \u2192 Wybaczam __________.', answer: 'mu', options: ['mu', 'jej', 'ci', 'im'] },
+      { q: 'Pomagamy dzieciom. \u2192 Pomagamy __________.', answer: 'im', options: ['im', 'nam', 'wam', 'mu'] },
+      { q: 'M\u00F3wi\u0119 prawd\u0119 tobie. \u2192 M\u00F3wi\u0119 __________ prawd\u0119.', answer: 'ci', options: ['ci', 'mi', 'mu', 'im'] }
+    ]
+  },
+
+  // --- SECTION 17: Complex sentences: modal + dative ---
+  {
+    id: 's17', emoji: '\u{1F9E9}', title: 'Z\u0142o\u017Cone zdania: modal + celownik',
+    desc: 'Uzupe\u0142nij zdanie \u2014 wpisz brakuj\u0105ce s\u0142owo w celowniku',
+    type: 'typein_sentence', count: 8,
+    questions: [
+      { q: 'Musz\u0119 pom\u00F3c __________. (brat)', answer: 'bratu', hint: 'brat \u2192 bratu (wyj\u0105tek: -u)' },
+      { q: 'Powinienem wybaczy\u0107 __________. (kolega)', answer: 'koledze', hint: 'kolega \u2192 koledze (m\u0119ski na -a)' },
+      { q: 'Chc\u0119 zaufa\u0107 __________. (ty)', answer: ['ci', 'tobie'], hint: 'ty \u2192 ci (kr\u00F3tka) / tobie (d\u0142uga)' },
+      { q: 'Nie mog\u0119 ust\u0105pi\u0107 __________. (on)', answer: ['mu', 'jemu'], hint: 'on \u2192 mu (kr\u00F3tka) / jemu (d\u0142uga)' },
+      { q: 'Musimy podzi\u0119kowa\u0107 __________. (nauczycielka)', answer: 'nauczycielce', hint: 'nauczycielka \u2192 nauczycielce (k \u2192 c + e)' },
+      { q: 'Trzeba pom\u00F3c __________. (mama)', answer: 'mamie', hint: 'mama \u2192 mamie (m \u2192 mi + e)' },
+      { q: 'Nie wolno k\u0142ama\u0107 __________. (przyjaciele)', answer: 'przyjacio\u0142om', hint: 'l.mn. celownik: + -om' },
+      { q: 'Powiniene\u015B ufa\u0107 __________. (brat)', answer: 'bratu', hint: 'brat \u2192 bratu (wyj\u0105tek: -u)' }
+    ]
+  },
+
+  // --- SECTION 18: True or False ---
+  {
+    id: 's18', emoji: '\u{1F9D0}', title: 'Prawda czy fa\u0142sz?',
+    desc: 'Oce\u0144, czy zdanie jest prawdziwe \u2014 na podstawie wszystkich lekcji',
+    type: 'tf', count: 12,
+    questions: shuffle([
+      { q: 'Rysy to najwy\u017Cszy szczyt w polskich Tatrach.', answer: true, explanation: 'Tak \u2014 Rysy maj\u0105 2499 m n.p.m.' },
+      { q: 'Morskie Oko jest najg\u0142\u0119bszym jeziorem w Tatrach.', answer: false, explanation: 'Najg\u0142\u0119bsze jest Wielki Staw Polski (79 m). Morskie Oko to najs\u0142ynniejsze jezioro.' },
+      { q: 'Kozica jest najwi\u0119kszym zwierz\u0119ciem w Tatrach.', answer: false, explanation: 'Najwi\u0119kszy jest nied\u017Awied\u017A brunatny (ponad 200 kg).' },
+      { q: 'Han urodzi\u0142 si\u0119 w Niemczech.', answer: false, explanation: 'Han urodzi\u0142 si\u0119 w Korei Po\u0142udniowej, w Seulu.' },
+      { q: 'Samoeksploatacja to kiedy szef zmusza ci\u0119 do pracy.', answer: false, explanation: 'Samoeksploatacja = sam siebie zmuszasz do pracy.' },
+      { q: 'Han proponuje odpoczynek, \u017Ceby potem lepiej pracowa\u0107.', answer: false, explanation: 'Han m\u00F3wi o odpoczynku BEZ celu \u2014 nie dla produktywno\u015Bci.' },
+      { q: '\u017Belazne prawo oligarchii m\u00F3wi, \u017Ce oligarchia to wina z\u0142ych ludzi.', answer: false, explanation: 'To strukturalna konieczno\u015B\u0107, nie wina konkretnych os\u00F3b.' },
+      { q: 'SPD g\u0142osowa\u0142a za wojn\u0105 w 1914 roku.', answer: true, explanation: 'Tak \u2014 liderzy wybrali przetrwanie partii kosztem jej antywojennych idea\u0142\u00F3w.' },
+      { q: 'Demokracja to stan, nie proces.', answer: false, explanation: 'Demokracja to PROCES \u2014 jak rower, jest stabilna tylko kiedy kr\u0119cisz peda\u0142ami.' },
+      { q: 'Arystoteles m\u00F3wi\u0142, \u017Ce cnota le\u017Cy pomi\u0119dzy dwiema skrajno\u015Bciami.', answer: true, explanation: 'Tak \u2014 to idea "z\u0142otego \u015Brodka" (np. odwaga mi\u0119dzy tch\u00F3rzostwem a g\u0142upot\u0105).' },
+      { q: 'Kant pozwala\u0142 k\u0142ama\u0107, je\u015Bli to chroni przyjaciela.', answer: false, explanation: 'Kant m\u00F3wi\u0142: nie wolno k\u0142ama\u0107 NIGDY \u2014 nawet \u017Ceby chroni\u0107 przyjaciela.' },
+      { q: 'Liberum veto wzmacnia\u0142o polskie pa\u0144stwo.', answer: false, explanation: 'Liberum veto OS\u0141ABIA\u0141O Polsk\u0119 \u2014 jeden szlachcic m\u00F3g\u0142 zablokowa\u0107 ca\u0142y sejm.' }
+    ])
+  }
+];
+
+// ===== STATE =====
+var currentSection = 0;
+var currentQuestion = 0;
+var sectionScores = [];
+var totalCorrect = 0;
+var totalQuestions = 0;
+var startTime = null;
+var timerInterval = null;
+var answered = false;
+var flatIndex = 0;
+var currentQData = null;
+
+// ===== ENGINE HELPERS =====
+
 function getTotalQ() {
-  return sections.reduce((s, sec) => s + sec.questions.length, 0);
+  return sections.reduce(function(s, sec) { return s + sec.questions.length; }, 0);
 }
 
 function updateProgress() {
-  const total = getTotalQ();
-  const pct = (flatIndex / total) * 100;
+  var total = getTotalQ();
+  var pct = (flatIndex / total) * 100;
   document.getElementById('progressBar').style.width = pct + '%';
 }
 
 function startTimer() {
   startTime = Date.now();
-  const el = document.getElementById('timer');
+  var el = document.getElementById('timer');
   el.style.display = 'block';
-  timerInterval = setInterval(() => {
-    const diff = Date.now() - startTime;
-    const m = Math.floor(diff / 60000);
-    const s = Math.floor((diff % 60000) / 1000);
+  timerInterval = setInterval(function() {
+    var diff = Date.now() - startTime;
+    var m = Math.floor(diff / 60000);
+    var s = Math.floor((diff % 60000) / 1000);
     el.textContent = String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
   }, 1000);
 }
@@ -496,9 +758,9 @@ function stopTimer() {
 
 function getElapsed() {
   if (!startTime) return '00:00';
-  const diff = Date.now() - startTime;
-  const m = Math.floor(diff / 60000);
-  const s = Math.floor((diff % 60000) / 1000);
+  var diff = Date.now() - startTime;
+  var m = Math.floor(diff / 60000);
+  var s = Math.floor((diff % 60000) / 1000);
   return String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
 }
 
@@ -506,19 +768,20 @@ function getElapsed() {
 
 function startQuiz() {
   // Shuffle options for MC questions
-  sections.forEach(sec => {
+  sections.forEach(function(sec) {
     if (sec.type === 'mc') {
-      sec.questions.forEach(q => { q.options = shuffle(q.options); });
+      sec.questions.forEach(function(q) { q.options = shuffle(q.options); });
     }
   });
 
   currentSection = 0;
   currentQuestion = 0;
-  sectionScores = sections.map(() => ({ correct: 0, total: 0 }));
+  sectionScores = sections.map(function() { return { correct: 0, total: 0 }; });
   totalCorrect = 0;
   flatIndex = 0;
   totalQuestions = getTotalQ();
   answered = false;
+  currentQData = null;
 
   document.getElementById('welcomeScreen').classList.remove('active');
   document.getElementById('quizScreen').classList.add('active');
@@ -527,27 +790,27 @@ function startQuiz() {
 }
 
 function renderSectionIntro() {
-  const sec = sections[currentSection];
-  const area = document.getElementById('quizScreen');
-  area.innerHTML = `
-    <div class="section-header">
-      <div class="emoji">${sec.emoji}</div>
-      <h2>${sec.title}</h2>
-      <div class="section-desc">${sec.desc}</div>
-      <div class="section-count">Sekcja ${currentSection + 1} / ${sections.length} — ${sec.questions.length} pytań</div>
-    </div>
-    <button class="btn btn-next" onclick="renderQuestion()" style="margin-top:20px;">Start &#x27A1;&#xFE0F;</button>
-  `;
+  var sec = sections[currentSection];
+  var area = document.getElementById('quizScreen');
+  area.innerHTML =
+    '<div class="section-header">' +
+      '<div class="emoji">' + sec.emoji + '</div>' +
+      '<h2>' + sec.title + '</h2>' +
+      '<div class="section-desc">' + sec.desc + '</div>' +
+      '<div class="section-count">Sekcja ' + (currentSection + 1) + ' / ' + sections.length + ' \u2014 ' + sec.questions.length + ' pyta\u0144</div>' +
+    '</div>' +
+    '<button class="btn btn-next" onclick="renderQuestion()" style="margin-top:20px;">Start \u27A1\uFE0F</button>';
   updateProgress();
 }
 
 function renderQuestion() {
-  const sec = sections[currentSection];
-  const q = sec.questions[currentQuestion];
+  var sec = sections[currentSection];
+  var q = sec.questions[currentQuestion];
   answered = false;
-  const area = document.getElementById('quizScreen');
-  const qNum = currentQuestion + 1;
-  const qTotal = sec.questions.length;
+  currentQData = null;
+  var area = document.getElementById('quizScreen');
+  var qNum = currentQuestion + 1;
+  var qTotal = sec.questions.length;
 
   if (sec.type === 'mc') {
     renderMC(area, sec, q, qNum, qTotal);
@@ -562,44 +825,40 @@ function renderQuestion() {
 }
 
 function renderMC(area, sec, q, qNum, qTotal) {
-  let promptHTML;
-  if (sec.id === 's1' || sec.id === 's2') {
-    promptHTML = `<span class="highlight">${q.q}</span>`;
-  } else if (sec.id === 's7') {
+  var promptHTML;
+  // For fill-in-the-blank style questions (contain __________)
+  if (q.q.indexOf('__________') !== -1) {
     promptHTML = q.q.replace('__________', '<span class="gap">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>');
   } else {
-    promptHTML = `&#x00AB;${q.q}&#x00BB;`;
+    // For translation / definition style — highlight the word/definition
+    promptHTML = '<span class="highlight">' + q.q + '</span>';
   }
 
-  const optionsHTML = q.options.map((opt, i) =>
-    `<button class="option" data-idx="${i}" onclick="selectMC(this, '${escapeAttr(opt)}', '${escapeAttr(q.answer)}')">${opt}</button>`
-  ).join('');
+  var optionsHTML = '';
+  for (var i = 0; i < q.options.length; i++) {
+    optionsHTML += '<button class="option" data-idx="' + i + '" onclick="selectMC(this, \'' + escapeAttr(q.options[i]) + '\', \'' + escapeAttr(q.answer) + '\')">' + q.options[i] + '</button>';
+  }
 
-  area.innerHTML = `
-    <div class="section-header" style="padding-top:16px;padding-bottom:10px;">
-      <h2 style="font-size:1rem;">${sec.emoji} ${sec.title}</h2>
-    </div>
-    <div class="question-card">
-      <div class="q-counter">Pytanie ${qNum} / ${qTotal}</div>
-      <div class="q-prompt">${promptHTML}</div>
-      <div class="options">${optionsHTML}</div>
-      <div class="feedback" id="feedback"></div>
-    </div>
-    <button class="btn btn-next" id="btnNext" disabled onclick="nextQuestion()">Dalej &#x27A1;&#xFE0F;</button>
-  `;
-}
-
-function escapeAttr(s) {
-  return s.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+  area.innerHTML =
+    '<div class="section-header" style="padding-top:16px;padding-bottom:10px;">' +
+      '<h2 style="font-size:1rem;">' + sec.emoji + ' ' + sec.title + '</h2>' +
+    '</div>' +
+    '<div class="question-card">' +
+      '<div class="q-counter">Pytanie ' + qNum + ' / ' + qTotal + '</div>' +
+      '<div class="q-prompt">' + promptHTML + '</div>' +
+      '<div class="options">' + optionsHTML + '</div>' +
+      '<div class="feedback" id="feedback"></div>' +
+    '</div>' +
+    '<button class="btn btn-next" id="btnNext" disabled onclick="nextQuestion()">Dalej \u27A1\uFE0F</button>';
 }
 
 function selectMC(btn, selected, correct) {
   if (answered) return;
   answered = true;
-  const options = document.querySelectorAll('.option');
-  options.forEach(o => o.disabled = true);
+  var options = document.querySelectorAll('.option');
+  options.forEach(function(o) { o.disabled = true; });
 
-  const isCorrect = selected === correct;
+  var isCorrect = selected === correct;
   if (isCorrect) {
     btn.classList.add('selected-correct');
     btn.closest('.question-card').classList.add('flash-correct');
@@ -607,33 +866,41 @@ function selectMC(btn, selected, correct) {
     recordAnswer(true);
   } else {
     btn.classList.add('selected-incorrect');
-    options.forEach(o => {
+    options.forEach(function(o) {
       if (o.textContent === correct) o.classList.add('reveal-correct');
     });
-    showFeedback(false, `Poprawna odpowiedź: <strong>${correct}</strong>`);
+    showFeedback(false, 'Poprawna odpowied\u017A: <strong>' + correct + '</strong>');
     recordAnswer(false);
   }
   document.getElementById('btnNext').disabled = false;
 }
 
 function renderTypeIn(area, sec, q, qNum, qTotal) {
-  area.innerHTML = `
-    <div class="section-header" style="padding-top:16px;padding-bottom:10px;">
-      <h2 style="font-size:1rem;">${sec.emoji} ${sec.title}</h2>
-    </div>
-    <div class="question-card">
-      <div class="q-counter">Pytanie ${qNum} / ${qTotal}</div>
-      <div class="q-prompt">Wpisz biernik od: <span class="highlight">${q.q}</span></div>
-      <div class="type-in-wrapper">
-        <input type="text" class="type-in" id="typeInput" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Twoja odpowiedź...">
-        <button class="btn-check" id="btnCheck" onclick="checkTypeIn('${escapeAttr(q.answer)}', '${escapeAttr(q.hint)}')">Sprawdź</button>
-      </div>
-      <div class="feedback" id="feedback"></div>
-    </div>
-    <button class="btn btn-next" id="btnNext" disabled onclick="nextQuestion()">Dalej &#x27A1;&#xFE0F;</button>
-  `;
-  const input = document.getElementById('typeInput');
-  input.addEventListener('keydown', (e) => {
+  currentQData = q;
+  var promptHTML;
+  if (sec.prompt) {
+    promptHTML = sec.prompt.replace('{word}', '<span class="highlight">' + q.q + '</span>');
+  } else {
+    promptHTML = 'Wpisz odpowied\u017A dla: <span class="highlight">' + q.q + '</span>';
+  }
+
+  area.innerHTML =
+    '<div class="section-header" style="padding-top:16px;padding-bottom:10px;">' +
+      '<h2 style="font-size:1rem;">' + sec.emoji + ' ' + sec.title + '</h2>' +
+    '</div>' +
+    '<div class="question-card">' +
+      '<div class="q-counter">Pytanie ' + qNum + ' / ' + qTotal + '</div>' +
+      '<div class="q-prompt">' + promptHTML + '</div>' +
+      '<div class="type-in-wrapper">' +
+        '<input type="text" class="type-in" id="typeInput" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Twoja odpowied\u017A...">' +
+        '<button class="btn-check" id="btnCheck" onclick="checkCurrentAnswer()">Sprawd\u017A</button>' +
+      '</div>' +
+      '<div class="feedback" id="feedback"></div>' +
+    '</div>' +
+    '<button class="btn btn-next" id="btnNext" disabled onclick="nextQuestion()">Dalej \u27A1\uFE0F</button>';
+
+  var input = document.getElementById('typeInput');
+  input.addEventListener('keydown', function(e) {
     if (e.key === 'Enter' && !answered) {
       document.getElementById('btnCheck').click();
     }
@@ -642,24 +909,26 @@ function renderTypeIn(area, sec, q, qNum, qTotal) {
 }
 
 function renderTypeInSentence(area, sec, q, qNum, qTotal) {
-  const promptHTML = q.q.replace('__________', '<span class="gap">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>');
-  area.innerHTML = `
-    <div class="section-header" style="padding-top:16px;padding-bottom:10px;">
-      <h2 style="font-size:1rem;">${sec.emoji} ${sec.title}</h2>
-    </div>
-    <div class="question-card">
-      <div class="q-counter">Pytanie ${qNum} / ${qTotal}</div>
-      <div class="q-prompt">${promptHTML}</div>
-      <div class="type-in-wrapper">
-        <input type="text" class="type-in" id="typeInput" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Twoja odpowiedź...">
-        <button class="btn-check" id="btnCheck" onclick="checkTypeIn('${escapeAttr(q.answer)}', '${escapeAttr(q.hint)}')">Sprawdź</button>
-      </div>
-      <div class="feedback" id="feedback"></div>
-    </div>
-    <button class="btn btn-next" id="btnNext" disabled onclick="nextQuestion()">Dalej &#x27A1;&#xFE0F;</button>
-  `;
-  const input = document.getElementById('typeInput');
-  input.addEventListener('keydown', (e) => {
+  currentQData = q;
+  var promptHTML = q.q.replace('__________', '<span class="gap">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>');
+
+  area.innerHTML =
+    '<div class="section-header" style="padding-top:16px;padding-bottom:10px;">' +
+      '<h2 style="font-size:1rem;">' + sec.emoji + ' ' + sec.title + '</h2>' +
+    '</div>' +
+    '<div class="question-card">' +
+      '<div class="q-counter">Pytanie ' + qNum + ' / ' + qTotal + '</div>' +
+      '<div class="q-prompt">' + promptHTML + '</div>' +
+      '<div class="type-in-wrapper">' +
+        '<input type="text" class="type-in" id="typeInput" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Twoja odpowied\u017A...">' +
+        '<button class="btn-check" id="btnCheck" onclick="checkCurrentAnswer()">Sprawd\u017A</button>' +
+      '</div>' +
+      '<div class="feedback" id="feedback"></div>' +
+    '</div>' +
+    '<button class="btn btn-next" id="btnNext" disabled onclick="nextQuestion()">Dalej \u27A1\uFE0F</button>';
+
+  var input = document.getElementById('typeInput');
+  input.addEventListener('keydown', function(e) {
     if (e.key === 'Enter' && !answered) {
       document.getElementById('btnCheck').click();
     }
@@ -667,54 +936,68 @@ function renderTypeInSentence(area, sec, q, qNum, qTotal) {
   input.focus();
 }
 
-function checkTypeIn(correct, hint) {
+function checkCurrentAnswer() {
   if (answered) return;
   answered = true;
-  const input = document.getElementById('typeInput');
-  const val = input.value;
-  const isCorrect = normalize(val) === normalize(correct);
+  var q = currentQData;
+  var input = document.getElementById('typeInput');
+  var val = input.value;
+  var correct = q.answer;
+  var displayAnswer = Array.isArray(correct) ? correct[0] : correct;
+  var hint = q.hint || '';
+
+  var isRight = Array.isArray(correct)
+    ? correct.some(function(a) { return normalize(val) === normalize(a); })
+    : normalize(val) === normalize(correct);
+
+  var isAlmost = !isRight && (Array.isArray(correct)
+    ? correct.some(function(a) { return stripDiacritics(normalize(val)) === stripDiacritics(normalize(a)); })
+    : stripDiacritics(normalize(val)) === stripDiacritics(normalize(correct)));
 
   input.disabled = true;
   document.getElementById('btnCheck').style.display = 'none';
 
-  if (isCorrect) {
+  if (isRight) {
     input.classList.add('correct');
     input.closest('.question-card').classList.add('flash-correct');
-    showFeedback(true, hint ? `&#x1F4A1; ${hint}` : '');
+    showFeedback(true, hint ? '\u{1F4A1} ' + hint : '');
     recordAnswer(true);
+  } else if (isAlmost) {
+    input.classList.add('incorrect');
+    showFeedback(false, 'Prawie! Pami\u0119taj o polskich znakach: <strong>' + displayAnswer + '</strong>' + (hint ? '<br>\u{1F4A1} ' + hint : ''));
+    recordAnswer(false);
   } else {
     input.classList.add('incorrect');
-    showFeedback(false, `Poprawna odpowiedź: <strong>${correct}</strong><br>&#x1F4A1; ${hint}`);
+    showFeedback(false, 'Poprawna odpowied\u017A: <strong>' + displayAnswer + '</strong>' + (hint ? '<br>\u{1F4A1} ' + hint : ''));
     recordAnswer(false);
   }
   document.getElementById('btnNext').disabled = false;
 }
 
 function renderTF(area, sec, q, qNum, qTotal) {
-  area.innerHTML = `
-    <div class="section-header" style="padding-top:16px;padding-bottom:10px;">
-      <h2 style="font-size:1rem;">${sec.emoji} ${sec.title}</h2>
-    </div>
-    <div class="question-card">
-      <div class="q-counter">Pytanie ${qNum} / ${qTotal}</div>
-      <div class="q-prompt">&#x00AB;${q.q}&#x00BB;</div>
-      <div class="tf-row">
-        <button class="btn-tf" onclick="selectTF(this, true, ${q.answer}, '${escapeAttr(q.explanation)}')">&#x2705; PRAWDA</button>
-        <button class="btn-tf" onclick="selectTF(this, false, ${q.answer}, '${escapeAttr(q.explanation)}')">&#x274C; FAŁSZ</button>
-      </div>
-      <div class="feedback" id="feedback"></div>
-    </div>
-    <button class="btn btn-next" id="btnNext" disabled onclick="nextQuestion()">Dalej &#x27A1;&#xFE0F;</button>
-  `;
+  area.innerHTML =
+    '<div class="section-header" style="padding-top:16px;padding-bottom:10px;">' +
+      '<h2 style="font-size:1rem;">' + sec.emoji + ' ' + sec.title + '</h2>' +
+    '</div>' +
+    '<div class="question-card">' +
+      '<div class="q-counter">Pytanie ' + qNum + ' / ' + qTotal + '</div>' +
+      '<div class="q-prompt">\u00AB' + q.q + '\u00BB</div>' +
+      '<div class="tf-row">' +
+        '<button class="btn-tf" onclick="selectTF(this, true, ' + q.answer + ', \'' + escapeAttr(q.explanation) + '\')">\u2705 PRAWDA</button>' +
+        '<button class="btn-tf" onclick="selectTF(this, false, ' + q.answer + ', \'' + escapeAttr(q.explanation) + '\')">\u274C FA\u0141SZ</button>' +
+      '</div>' +
+      '<div class="feedback" id="feedback"></div>' +
+    '</div>' +
+    '<button class="btn btn-next" id="btnNext" disabled onclick="nextQuestion()">Dalej \u27A1\uFE0F</button>';
 }
 
 function selectTF(btn, selected, correct, explanation) {
   if (answered) return;
   answered = true;
-  const buttons = document.querySelectorAll('.btn-tf');
-  buttons.forEach(b => b.disabled = true);
+  var buttons = document.querySelectorAll('.btn-tf');
+  buttons.forEach(function(b) { b.disabled = true; });
 
-  const isCorrect = selected === correct;
+  var isCorrect = selected === correct;
   if (isCorrect) {
     btn.classList.add('selected-correct');
     btn.closest('.question-card').classList.add('flash-correct');
@@ -722,8 +1005,8 @@ function selectTF(btn, selected, correct, explanation) {
     recordAnswer(true);
   } else {
     btn.classList.add('selected-incorrect');
-    buttons.forEach(b => {
-      const bVal = b.textContent.includes('PRAWDA');
+    buttons.forEach(function(b) {
+      var bVal = b.textContent.indexOf('PRAWDA') !== -1;
       if (bVal === correct) b.classList.add('reveal-correct');
     });
     showFeedback(false, explanation);
@@ -733,9 +1016,9 @@ function selectTF(btn, selected, correct, explanation) {
 }
 
 function showFeedback(isCorrect, msg) {
-  const fb = document.getElementById('feedback');
+  var fb = document.getElementById('feedback');
   fb.className = 'feedback show ' + (isCorrect ? 'correct-fb' : 'incorrect-fb');
-  fb.innerHTML = (isCorrect ? '&#x2705; Dobrze!' : '&#x274C; Niestety...') + (msg ? '<br>' + msg : '');
+  fb.innerHTML = (isCorrect ? '\u2705 Dobrze!' : '\u274C Niestety...') + (msg ? '<br>' + msg : '');
 }
 
 function recordAnswer(isCorrect) {
@@ -748,7 +1031,7 @@ function recordAnswer(isCorrect) {
 }
 
 function nextQuestion() {
-  const sec = sections[currentSection];
+  var sec = sections[currentSection];
   currentQuestion++;
   if (currentQuestion >= sec.questions.length) {
     currentSection++;
@@ -767,69 +1050,70 @@ function nextQuestion() {
 
 function showResults() {
   stopTimer();
-  const elapsed = getElapsed();
-  const total = getTotalQ();
-  const pct = Math.round((totalCorrect / total) * 100);
+  var elapsed = getElapsed();
+  var total = getTotalQ();
+  var pct = Math.round((totalCorrect / total) * 100);
 
-  let emoji, label;
-  if (pct >= 90) { emoji = '&#x1F3C6;'; label = 'Mistrz!'; }
-  else if (pct >= 70) { emoji = '&#x1F4AA;'; label = 'Bardzo dobrze!'; }
-  else if (pct >= 50) { emoji = '&#x1F4DA;'; label = 'Trzeba powtórzyć'; }
-  else { emoji = '&#x1F504;'; label = 'Powtórz lekcję'; }
+  var emoji, label;
+  if (pct >= 90) { emoji = '\u{1F3C6}'; label = 'Mistrz!'; }
+  else if (pct >= 70) { emoji = '\u{1F4AA}'; label = 'Bardzo dobrze!'; }
+  else if (pct >= 50) { emoji = '\u{1F4DA}'; label = 'Trzeba powt\u00F3rzy\u0107'; }
+  else { emoji = '\u{1F504}'; label = 'Powt\u00F3rz lekcj\u0119'; }
 
   document.getElementById('progressBar').style.width = '100%';
   document.getElementById('quizScreen').classList.remove('active');
-  const area = document.getElementById('resultsScreen');
+  var area = document.getElementById('resultsScreen');
   area.classList.add('active');
 
-  let rowsHTML = sections.map((sec, i) => {
-    const sc = sectionScores[i];
-    const secPct = sc.total > 0 ? Math.round((sc.correct / sc.total) * 100) : 0;
-    let barColor = secPct >= 70 ? 'var(--correct)' : secPct >= 50 ? 'var(--accent)' : 'var(--incorrect)';
-    return `
-      <div class="section-score-row">
-        <span class="name">${sec.emoji} ${sec.title}</span>
-        <span class="score">${sc.correct}/${sc.total}</span>
-        <div class="section-score-bar"><div class="section-score-fill" style="width:${secPct}%;background:${barColor};"></div></div>
-      </div>`;
-  }).join('');
+  var rowsHTML = '';
+  for (var i = 0; i < sections.length; i++) {
+    var sec = sections[i];
+    var sc = sectionScores[i];
+    var secPct = sc.total > 0 ? Math.round((sc.correct / sc.total) * 100) : 0;
+    var barColor = secPct >= 70 ? 'var(--correct)' : secPct >= 50 ? 'var(--accent)' : 'var(--incorrect)';
+    rowsHTML +=
+      '<div class="section-score-row">' +
+        '<span class="name">' + sec.emoji + ' ' + sec.title + '</span>' +
+        '<span class="score">' + sc.correct + '/' + sc.total + '</span>' +
+        '<div class="section-score-bar"><div class="section-score-fill" style="width:' + secPct + '%;background:' + barColor + ';"></div></div>' +
+      '</div>';
+  }
 
-  let emojiGrade;
+  var emojiGrade;
   if (pct >= 90) emojiGrade = '\u{1F3C6}';
   else if (pct >= 70) emojiGrade = '\u{1F4AA}';
   else if (pct >= 50) emojiGrade = '\u{1F4DA}';
   else emojiGrade = '\u{1F504}';
 
-  area.innerHTML = `
-    <div class="results">
-      <div class="grade-emoji">${emoji}</div>
-      <div class="grade-label">${label}</div>
-      <div class="score-main">${totalCorrect} / ${total}</div>
-      <div class="score-pct">${pct}% poprawnych odpowiedzi</div>
-      <div class="elapsed">&#x23F1;&#xFE0F; Czas: ${elapsed}</div>
-      <div class="section-scores">
-        <h3>Wyniki sekcji</h3>
-        ${rowsHTML}
-      </div>
-      <div class="results-buttons">
-        <button class="btn-share" onclick="shareResult(${totalCorrect}, ${total}, ${pct}, '${emojiGrade}')">&#x1F4CB; Podziel się wynikiem</button>
-        <button class="btn-restart" onclick="restart()">&#x1F504; Spróbuj jeszcze raz</button>
-      </div>
-    </div>
-  `;
+  area.innerHTML =
+    '<div class="results">' +
+      '<div class="grade-emoji">' + emoji + '</div>' +
+      '<div class="grade-label">' + label + '</div>' +
+      '<div class="score-main">' + totalCorrect + ' / ' + total + '</div>' +
+      '<div class="score-pct">' + pct + '% poprawnych odpowiedzi</div>' +
+      '<div class="elapsed">\u23F1\uFE0F Czas: ' + elapsed + '</div>' +
+      '<div class="section-scores">' +
+        '<h3>Wyniki sekcji</h3>' +
+        rowsHTML +
+      '</div>' +
+      '<div class="results-buttons">' +
+        '<button class="btn-share" onclick="shareResult(' + totalCorrect + ', ' + total + ', ' + pct + ', \'' + emojiGrade + '\')">\u{1F4CB} Podziel si\u0119 wynikiem</button>' +
+        '<button class="btn-restart" onclick="restart()">\u{1F504} Spr\u00F3buj jeszcze raz</button>' +
+      '</div>' +
+    '</div>';
 }
 
 function shareResult(correct, total, pct, emoji) {
-  const text = `\u{1F9E0} Quiz: Spo\u0142ecze\u0144stwo zm\u0119czenia \u2014 Lekcja 2\nM\u00F3j wynik: ${correct}/${total} (${pct}%)\n${emoji}`;
+  var text = '\u{1F4DA} Wielki Test \u2014 Lekcje 1\u20134\nM\u00F3j wynik: ' + correct + '/' + total + ' (' + pct + '%)\n' + emoji;
   if (navigator.clipboard && navigator.clipboard.writeText) {
-    navigator.clipboard.writeText(text).then(() => showToast()).catch(() => fallbackCopy(text));
+    navigator.clipboard.writeText(text).then(function() { showToast(); }).catch(function() { fallbackCopy(text); });
   } else {
     fallbackCopy(text);
   }
 }
 
 function fallbackCopy(text) {
-  const ta = document.createElement('textarea');
+  var ta = document.createElement('textarea');
   ta.value = text;
   ta.style.position = 'fixed';
   ta.style.left = '-9999px';
@@ -840,9 +1124,9 @@ function fallbackCopy(text) {
 }
 
 function showToast() {
-  const t = document.getElementById('copiedToast');
+  var t = document.getElementById('copiedToast');
   t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2000);
+  setTimeout(function() { t.classList.remove('show'); }, 2000);
 }
 
 function restart() {
@@ -851,11 +1135,264 @@ function restart() {
   document.getElementById('timer').style.display = 'none';
   stopTimer();
 
-  // Re-shuffle everything
-  sections.forEach(sec => {
-    sec.questions = shuffle(sec.questions);
+  // Re-shuffle pools and re-slice
+  sections[0].questions = shuffle([
+    { q: 'zm\u0119czenie', answer: 'tiredness / fatigue', options: ['tiredness / fatigue', 'laziness', 'anxiety', 'weakness'] },
+    { q: 'wypalenie', answer: 'burnout', options: ['burnout', 'punishment', 'depression', 'competition'] },
+    { q: 'pu\u0142apka', answer: 'trap', options: ['trap', 'progress', 'reward', 'adventure'] },
+    { q: 'samoeksploatacja', answer: 'self-exploitation', options: ['self-exploitation', 'self-discipline', 'self-improvement', 'self-defense'] },
+    { q: 'oligarchia', answer: 'rule of the few', options: ['rule of the few', 'democracy', 'bureaucracy', 'monarchy'] },
+    { q: 'w\u0142adza', answer: 'power', options: ['power', 'weakness', 'law', 'freedom'] },
+    { q: 'przetrwanie', answer: 'survival', options: ['survival', 'suffering', 'competition', 'victory'] },
+    { q: 'uczestnictwo', answer: 'participation', options: ['participation', 'punishment', 'progress', 'entertainment'] },
+    { q: 'cnota', answer: 'virtue', options: ['virtue', 'sin', 'pride', 'talent'] },
+    { q: 'tch\u00F3rz', answer: 'coward', options: ['coward', 'hero', 'liar', 'traitor'] },
+    { q: 'hojno\u015B\u0107', answer: 'generosity', options: ['generosity', 'greed', 'jealousy', 'poverty'] },
+    { q: 'up\u00F3r', answer: 'stubbornness', options: ['stubbornness', 'flexibility', 'weakness', 'strength'] },
+    { q: 'zdrada', answer: 'betrayal', options: ['betrayal', 'loyalty', 'honesty', 'compromise'] },
+    { q: 'kontemplacja', answer: 'contemplation', options: ['contemplation', 'competition', 'concentration', 'calculation'] },
+    { q: 'okrucie\u0144stwo', answer: 'cruelty', options: ['cruelty', 'kindness', 'justice', 'mercy'] },
+    { q: 'fanatyzm', answer: 'fanaticism', options: ['fanaticism', 'enthusiasm', 'patriotism', 'optimism'] },
+    { q: 'przejrzysty', answer: 'clear / transparent', options: ['clear / transparent', 'dark', 'dirty', 'deep'] },
+    { q: 'przyroda', answer: 'nature', options: ['nature', 'culture', 'science', 'technology'] },
+    { q: 'stromy', answer: 'steep', options: ['steep', 'flat', 'wide', 'narrow'] },
+    { q: 'szczyt', answer: 'peak / summit', options: ['peak / summit', 'valley', 'river', 'forest'] }
+  ]).slice(0, 14);
+
+  sections[1].questions = shuffle([
+    { q: 'society', answer: 'spo\u0142ecze\u0144stwo', hint: 'od "spo\u0142eczny" \u2014 -e\u0144stwo' },
+    { q: 'achievement', answer: 'osi\u0105gni\u0119cie', hint: 'od "osi\u0105gn\u0105\u0107" \u2014 -ni\u0119cie' },
+    { q: 'freedom', answer: 'wolno\u015B\u0107', hint: 'od "wolny" \u2014 -o\u015B\u0107' },
+    { q: 'courage', answer: 'odwaga', hint: 'od "odwa\u017Cny"' },
+    { q: 'rest', answer: 'odpoczynek', hint: 'od "odpocz\u0105\u0107"' },
+    { q: 'boredom', answer: 'nuda', hint: 'kr\u00F3tkie s\u0142owo od "nudzi\u0107 si\u0119"' },
+    { q: 'leader', answer: 'lider', hint: 'tak samo jak angielskie "leader"' },
+    { q: 'organization', answer: 'organizacja', hint: '-tion \u2192 -cja' },
+    { q: 'betrayal', answer: 'zdrada', hint: 'od "zdradzi\u0107"' },
+    { q: 'cruelty', answer: 'okrucie\u0144stwo', hint: 'od "okrutny" \u2014 -e\u0144stwo' },
+    { q: 'coward', answer: 'tch\u00F3rz', hint: 'pami\u0119taj: t-c-h-\u00F3-r-z' },
+    { q: 'compromise', answer: 'kompromis', hint: 'podobnie do rosyjskiego' },
+    { q: 'stubbornness', answer: 'up\u00F3r', hint: 'kr\u00F3tkie s\u0142owo z "\u00F3"' },
+    { q: 'participation', answer: 'uczestnictwo', hint: 'od "uczestnik"' },
+    { q: 'trap', answer: 'pu\u0142apka', hint: 'p-u-\u0142-a-p-k-a' },
+    { q: 'rule / principle', answer: 'zasada', hint: 'od "zasadniczy"' }
+  ]).slice(0, 12);
+
+  sections[2].questions = shuffle([
+    { q: 'Choroba od zbyt du\u017Co pracy \u2014 nie mog\u0119 ju\u017C wi\u0119cej', answer: 'wypalenie', options: ['wypalenie', 'zm\u0119czenie', 'depresja', 'frustracja'] },
+    { q: 'Sytuacja, gdy sam si\u0119 zmuszasz do pracy', answer: 'samoeksploatacja', options: ['samoeksploatacja', 'produktywno\u015B\u0107', 'ambicja', 'dyscyplina'] },
+    { q: 'Rz\u0105dy nielicznych', answer: 'oligarchia', options: ['oligarchia', 'demokracja', 'monarchia', 'anarchia'] },
+    { q: 'Dobra cecha charakteru; post\u0119powanie zgodne z zasadami', answer: 'cnota', options: ['cnota', 'talent', 'm\u0105dro\u015B\u0107', 'sukces'] },
+    { q: 'Osoba, kt\u00F3ra boi si\u0119 i unika trudnych sytuacji', answer: 'tch\u00F3rz', options: ['tch\u00F3rz', 'pesymista', 'leniuch', 'egoista'] },
+    { q: 'Z\u0142amanie zaufania', answer: 'zdrada', options: ['zdrada', 'k\u0142\u00F3tnia', 'k\u0142amstwo', 'pomy\u0142ka'] },
+    { q: 'Spokojne my\u015Blenie bez celu i wyniku', answer: 'kontemplacja', options: ['kontemplacja', 'kalkulacja', 'medytacja', 'planowanie'] },
+    { q: 'Pozosta\u0107 przy \u017Cyciu; nie upa\u015B\u0107', answer: 'przetrwanie', options: ['przetrwanie', 'wygrana', 'ucieczka', 'sukces'] },
+    { q: 'Brak elastyczno\u015Bci; niemo\u017Cno\u015B\u0107 dopasowania si\u0119', answer: 'sztywno\u015B\u0107', options: ['sztywno\u015B\u0107', 'si\u0142a', 'odwaga', 'stabilno\u015B\u0107'] },
+    { q: 'Ch\u0119\u0107 dzielenia si\u0119 pieni\u0119dzmi, czasem, pomoc\u0105', answer: 'hojno\u015B\u0107', options: ['hojno\u015B\u0107', 'bogactwo', 'skromno\u015B\u0107', 'ambicja'] },
+    { q: 'Celowe zadawanie b\u00F3lu; brak wsp\u00F3\u0142czucia', answer: 'okrucie\u0144stwo', options: ['okrucie\u0144stwo', 'si\u0142a', 'zemsta', 'agresja'] },
+    { q: 'M\u00F3wi\u0107 nieprawd\u0119 celowo', answer: 'k\u0142ama\u0107', options: ['k\u0142ama\u0107', 'milcze\u0107', 'zapomina\u0107', 'przeprasza\u0107'] }
+  ]).slice(0, 10);
+
+  sections[3].questions = shuffle([
+    { q: 'wysoki', answer: 'wy\u017Cszy', hint: '-oki \u2192 -\u017Cszy (k \u2192 \u017C)' },
+    { q: 'niski', answer: 'ni\u017Cszy', hint: '-ski \u2192 -\u017Cszy (sk \u2192 \u017C)' },
+    { q: 'g\u0142\u0119boki', answer: 'g\u0142\u0119bszy', hint: '-oki odpada' },
+    { q: 'pi\u0119kny', answer: 'pi\u0119kniejszy', hint: '-ny \u2192 -niejszy' },
+    { q: 'trudny', answer: 'trudniejszy', hint: '-ny \u2192 -niejszy' },
+    { q: '\u0142atwy', answer: '\u0142atwiejszy', hint: '-wy \u2192 -wiejszy' },
+    { q: 'popularny', answer: 'popularniejszy', hint: '-ny \u2192 -niejszy' },
+    { q: 'du\u017Cy', answer: 'wi\u0119kszy', hint: 'NIEREGULARNY! Trzeba zapami\u0119ta\u0107' },
+    { q: 'ma\u0142y', answer: 'mniejszy', hint: 'NIEREGULARNY! Trzeba zapami\u0119ta\u0107' },
+    { q: 'dobry', answer: 'lepszy', hint: 'NIEREGULARNY! Trzeba zapami\u0119ta\u0107' },
+    { q: 'z\u0142y', answer: 'gorszy', hint: 'NIEREGULARNY! Trzeba zapami\u0119ta\u0107' },
+    { q: 'szybki', answer: 'szybszy', hint: '-ki \u2192 -szy' }
+  ]).slice(0, 10);
+
+  sections[4].questions = shuffle([
+    { q: 'pi\u0119kny', answer: 'najpi\u0119kniejszy', hint: 'NAJ- + pi\u0119kniejszy' },
+    { q: 'trudny', answer: 'najtrudniejszy', hint: 'NAJ- + trudniejszy' },
+    { q: 'wysoki', answer: 'najwy\u017Cszy', hint: 'NAJ- + wy\u017Cszy' },
+    { q: 'du\u017Cy', answer: 'najwi\u0119kszy', hint: 'NIEREG. NAJ- + wi\u0119kszy' },
+    { q: 'dobry', answer: 'najlepszy', hint: 'NIEREG. NAJ- + lepszy' },
+    { q: 'z\u0142y', answer: 'najgorszy', hint: 'NIEREG. NAJ- + gorszy' },
+    { q: 'popularny', answer: 'najpopularniejszy', hint: 'NAJ- + popularniejszy' },
+    { q: 'g\u0142\u0119boki', answer: 'najg\u0142\u0119bszy', hint: 'NAJ- + g\u0142\u0119bszy' },
+    { q: '\u0142atwy', answer: 'naj\u0142atwiejszy', hint: 'NAJ- + \u0142atwiejszy' },
+    { q: 'ma\u0142y', answer: 'najmniejszy', hint: 'NIEREG. NAJ- + mniejszy' }
+  ]).slice(0, 8);
+
+  // sections 5-8 (indices 5-8) are not sliced — keep fixed questions
+  // but re-assign to refresh them
+  sections[5].questions = [
+    { q: 'Giewont jest __________ (niski) ni\u017C Rysy.', answer: 'ni\u017Cszy', hint: 'niski \u2192 ni\u017Cszy (rodzaj m\u0119ski)' },
+    { q: 'Nied\u017Awied\u017A jest __________ (du\u017Cy) ni\u017C kozica.', answer: 'wi\u0119kszy', hint: 'du\u017Cy \u2192 wi\u0119kszy \u2014 NIEREGULARNY (r. m\u0119ski)' },
+    { q: '\u015Awistak jest __________ (ma\u0142y) ni\u017C kozica.', answer: 'mniejszy', hint: 'ma\u0142y \u2192 mniejszy \u2014 NIEREGULARNY (r. m\u0119ski)' },
+    { q: 'Wielki Staw jest __________ (g\u0142\u0119boki) ni\u017C Morskie Oko.', answer: 'g\u0142\u0119bszy', hint: 'g\u0142\u0119boki \u2192 g\u0142\u0119bszy (r. m\u0119ski)' },
+    { q: 'Tatry to __________ (wysoki) g\u00F3ry w Polsce.', answer: 'najwy\u017Csze', hint: 'stopie\u0144 najwy\u017Cszy + l.mn. \u2192 najwy\u017Csze' },
+    { q: 'Morskie Oko to __________ (s\u0142ynny) jezioro.', answer: 'najs\u0142ynniejsze', hint: 'stopie\u0144 najwy\u017Cszy + r. nijaki \u2192 najs\u0142ynniejsze' },
+    { q: 'Nied\u017Awied\u017A jest __________ (du\u017Cy) zwierz\u0119ciem w Tatrach.', answer: 'najwi\u0119kszym', hint: 'stopie\u0144 najwy\u017Cszy + narz\u0119dnik \u2192 najwi\u0119kszym' },
+    { q: 'Ta lekcja by\u0142a __________ (trudny) ni\u017C poprzednia.', answer: 'trudniejsza', hint: 'trudniejszy w r. \u017Ce\u0144skim \u2192 trudniejsza' }
+  ];
+
+  sections[6].questions = shuffle([
+    { q: 'telefon', answer: 'telefon', hint: 'M\u0119ski nie\u017Cywotny \u2192 biernik = mianownik' },
+    { q: 'firma', answer: 'firm\u0119', hint: '\u017Be\u0144ski: -a \u2192 -\u0119' },
+    { q: 'wr\u00F3g', answer: 'wroga', hint: 'M\u0119ski \u017Cywotny \u2192 biernik = dope\u0142niacz (-a)' },
+    { q: 'ksi\u0105\u017Cka', answer: 'ksi\u0105\u017Ck\u0119', hint: '\u017Be\u0144ski: -a \u2192 -\u0119' },
+    { q: 'zm\u0119czenie', answer: 'zm\u0119czenie', hint: 'Nijaki \u2192 biernik = mianownik' },
+    { q: 'aplikacja', answer: 'aplikacj\u0119', hint: '\u017Be\u0144ski: -a \u2192 -\u0119' },
+    { q: 'szef', answer: 'szefa', hint: 'M\u0119ski \u017Cywotny \u2192 biernik = dope\u0142niacz (-a)' },
+    { q: 'kariera', answer: 'karier\u0119', hint: '\u017Be\u0144ski: -a \u2192 -\u0119' },
+    { q: 'projekt', answer: 'projekt', hint: 'M\u0119ski nie\u017Cywotny \u2192 biernik = mianownik' },
+    { q: 'lider', answer: 'lidera', hint: 'M\u0119ski \u017Cywotny \u2192 biernik = dope\u0142niacz (-a)' },
+    { q: 'organizacja', answer: 'organizacj\u0119', hint: '\u017Be\u0144ski: -a \u2192 -\u0119' },
+    { q: 'reklama', answer: 'reklam\u0119', hint: '\u017Be\u0144ski: -a \u2192 -\u0119' }
+  ]).slice(0, 10);
+
+  // sections 7,8 (indices 7,8) — fixed, re-assign
+  sections[7].questions = [
+    { q: 'Mam __________ (surowy szef).', answer: 'surowego szefa', hint: 'M. \u017Cywotny: przymiotnik -ego + rzeczownik -a' },
+    { q: 'Kupuj\u0119 __________ (nowa aplikacja).', answer: 'now\u0105 aplikacj\u0119', hint: '\u017Be\u0144ski: przymiotnik -\u0105 + rzeczownik -\u0119' },
+    { q: 'Czytam __________ (interesuj\u0105ca ksi\u0105\u017Cka).', answer: 'interesuj\u0105c\u0105 ksi\u0105\u017Ck\u0119', hint: '\u017Be\u0144ski: przymiotnik -\u0105 + rzeczownik -\u0119' },
+    { q: 'Robi\u0119 __________ (kolejny trening).', answer: 'kolejny trening', hint: 'M. nie\u017Cywotny \u2192 biernik = mianownik' },
+    { q: 'Widz\u0119 __________ (stary dom).', answer: 'stary dom', hint: 'M. nie\u017Cywotny \u2192 biernik = mianownik' },
+    { q: 'Znam __________ (dobry lider).', answer: 'dobrego lidera', hint: 'M. \u017Cywotny: przymiotnik -ego + rzeczownik -a' },
+    { q: 'Proponuj\u0119 __________ (proste rozwi\u0105zanie).', answer: 'proste rozwi\u0105zanie', hint: 'Nijaki \u2192 biernik = mianownik' },
+    { q: 'Kupuj\u0119 __________ (polska ksi\u0105\u017Cka).', answer: 'polsk\u0105 ksi\u0105\u017Ck\u0119', hint: '\u017Be\u0144ski: przymiotnik -\u0105 + rzeczownik -\u0119' }
+  ];
+
+  sections[8].questions = [
+    { q: 'Mam sukces \u2192 Nie mam __________.', answer: 'sukcesu', hint: 'M\u0119ski \u2192 dope\u0142niacz -u' },
+    { q: 'Widz\u0119 problem \u2192 Nie widz\u0119 __________.', answer: 'problemu', hint: 'M\u0119ski \u2192 dope\u0142niacz -u' },
+    { q: 'Czuj\u0119 rado\u015B\u0107 \u2192 Nie czuj\u0119 __________.', answer: 'rado\u015Bci', hint: '\u017Be\u0144ski: -\u015B\u0107 \u2192 -\u015Bci' },
+    { q: 'Mam czas \u2192 Nie mam __________.', answer: 'czasu', hint: 'M\u0119ski \u2192 dope\u0142niacz -u' },
+    { q: 'Widz\u0119 rozwi\u0105zanie \u2192 Nie widz\u0119 __________.', answer: 'rozwi\u0105zania', hint: 'Nijaki: -ie \u2192 -ia' },
+    { q: 'Mam telefon \u2192 Nie mam __________.', answer: 'telefonu', hint: 'M\u0119ski \u2192 dope\u0142niacz -u' },
+    { q: 'Znam odpowied\u017A \u2192 Nie znam __________.', answer: 'odpowiedzi', hint: '\u017Be\u0144ski: -\u017A \u2192 -dzi' },
+    { q: 'Mam pomys\u0142 \u2192 Nie mam __________.', answer: 'pomys\u0142u', hint: 'M\u0119ski \u2192 dope\u0142niacz -u' }
+  ];
+
+  sections[9].questions = shuffle([
+    { q: 'socjolog', answer: 'socjologiem', hint: 'M\u0119ski: + -iem' },
+    { q: 'organizacja', answer: 'organizacj\u0105', hint: '\u017Be\u0144ski: -a \u2192 -\u0105' },
+    { q: 'lider', answer: 'liderem', hint: 'M\u0119ski: + -em' },
+    { q: 'proces', answer: 'procesem', hint: 'M\u0119ski: + -em' },
+    { q: 'rower', answer: 'rowerem', hint: 'M\u0119ski: + -em' },
+    { q: 'oligarchia', answer: 'oligarchi\u0105', hint: '\u017Be\u0144ski: -a \u2192 -\u0105' },
+    { q: 'zbawiciel', answer: 'zbawicielem', hint: 'M\u0119ski: + -em' },
+    { q: 'socjalista', answer: 'socjalist\u0105', hint: 'M\u0119ski na -a \u2192 -\u0105 (jak \u017Ce\u0144ski!)' },
+    { q: 'prawo', answer: 'prawem', hint: 'Nijaki: -o \u2192 -em' },
+    { q: 'partia', answer: 'parti\u0105', hint: '\u017Be\u0144ski: -a \u2192 -\u0105' },
+    { q: 'kobieta', answer: 'kobiet\u0105', hint: '\u017Be\u0144ski: -a \u2192 -\u0105' },
+    { q: 'miasto', answer: 'miastem', hint: 'Nijaki: -o \u2192 -em' }
+  ]).slice(0, 10);
+
+  sections[10].questions = [
+    { q: 'Michels by\u0142 __________ (cz\u0142onek) SPD.', answer: 'cz\u0142onkiem', hint: 'cz\u0142onek \u2192 cz\u0142onkiem (M. + -iem)' },
+    { q: 'Organizacja staje si\u0119 __________ (oligarchia).', answer: 'oligarchi\u0105', hint: '\u017Be\u0144ski: -a \u2192 -\u0105' },
+    { q: 'Demokracja jest __________ (proces).', answer: 'procesem', hint: 'M\u0119ski: + -em' },
+    { q: 'Lider staje si\u0119 __________ (zbawiciel).', answer: 'zbawicielem', hint: 'M\u0119ski: + -em' },
+    { q: 'Han jest __________ (filozof).', answer: 'filozofem', hint: 'M\u0119ski: + -em' },
+    { q: 'SPD by\u0142a najwi\u0119ksz\u0105 __________ (partia).', answer: 'parti\u0105', hint: '\u017Be\u0144ski: -a \u2192 -\u0105' },
+    { q: 'Rewolucjoni\u015Bci staj\u0105 si\u0119 __________ (konserwatyści).', answer: 'konserwatystami', hint: 'Liczba mnoga: + -ami' },
+    { q: 'Demokracja jest jak __________ (rower).', answer: 'rowerem', hint: 'M\u0119ski: + -em' }
+  ];
+
+  // sections 11-13 (indices 11-13) are MC, fixed — re-assign with shuffled options
+  sections[11].questions = [
+    { q: '(musie\u0107, ja) __________ i\u015B\u0107 do pracy.', answer: 'musz\u0119', options: ['musz\u0119', 'musisz', 'musi', 'musimy'] },
+    { q: '(m\u00F3c, ty) __________ mi pom\u00F3c?', answer: 'mo\u017Cesz', options: ['mo\u017Cesz', 'mog\u0119', 'mo\u017Ce', 'mog\u0105'] },
+    { q: '(chcie\u0107, my) __________ porozmawia\u0107.', answer: 'chcemy', options: ['chcemy', 'chc\u0119', 'chcesz', 'chc\u0105'] },
+    { q: '(musie\u0107, oni) __________ negocjowa\u0107.', answer: 'musz\u0105', options: ['musz\u0105', 'musz\u0119', 'musi', 'musicie'] },
+    { q: '(m\u00F3c, wy) __________ przyj\u015B\u0107 jutro?', answer: 'mo\u017Cecie', options: ['mo\u017Cecie', 'mog\u0119', 'mo\u017Cesz', 'mog\u0105'] },
+    { q: '(chcie\u0107, ona) __________ zosta\u0107 lekarzem.', answer: 'chce', options: ['chce', 'chc\u0119', 'chcemy', 'chc\u0105'] },
+    { q: '(powinien, ja-m\u0119\u017Cczyzna) __________ pom\u00F3c.', answer: 'powinienem', options: ['powinienem', 'powinnam', 'powinien', 'powinni\u015Bmy'] },
+    { q: '(powinien, ja-kobieta) __________ pom\u00F3c.', answer: 'powinnam', options: ['powinnam', 'powinienem', 'powinna', 'powinno'] },
+    { q: '(powinien, ona) __________ wybaczy\u0107.', answer: 'powinna', options: ['powinna', 'powinien', 'powinnam', 'powinno'] },
+    { q: '(m\u00F3c, ja) __________ to zrobi\u0107.', answer: 'mog\u0119', options: ['mog\u0119', 'mo\u017Cesz', 'mo\u017Ce', 'mog\u0105'] }
+  ];
+
+  sections[12].questions = [
+    { q: '__________ i\u015B\u0107 do pracy o \u00F3smej \u2014 szef czeka. (przymus czy rada?)', answer: 'Musz\u0119', options: ['Musz\u0119', 'Powinienem'] },
+    { q: '__________ cz\u0119\u015Bciej dzwoni\u0107 do babci. (przymus czy rada?)', answer: 'Powinienem', options: ['Powinienem', 'Musz\u0119'] },
+    { q: 'Samolot odlatuje za godzin\u0119 \u2014 __________ jecha\u0107! (przymus czy rada?)', answer: 'musz\u0119', options: ['musz\u0119', 'powinienem'] },
+    { q: '__________ wi\u0119cej czyta\u0107 po polsku. (przymus czy rada?)', answer: 'Powinienem', options: ['Powinienem', 'Musz\u0119'] },
+    { q: 'Mama jest bardzo chora \u2014 __________ zosta\u0107 w domu. (przymus czy rada?)', answer: 'musz\u0119', options: ['musz\u0119', 'powinienem'] },
+    { q: '__________ cz\u0119\u015Bciej \u0107wiczy\u0107 sport. (przymus czy rada?)', answer: 'Powinienem', options: ['Powinienem', 'Musz\u0119'] },
+    { q: 'Jutro egzamin \u2014 __________ si\u0119 uczy\u0107! (przymus czy rada?)', answer: 'musz\u0119', options: ['musz\u0119', 'powinienem'] },
+    { q: '__________ przeprosi\u0107 koleg\u0119 \u2014 powiedzia\u0142em co\u015B z\u0142ego. (przymus czy rada?)', answer: 'Powinienem', options: ['Powinienem', 'Musz\u0119'] }
+  ];
+
+  sections[13].questions = [
+    { q: '__________ tu pali\u0107! (zakaz)', answer: 'Nie wolno', options: ['Nie wolno', 'Nie trzeba', 'Nie mo\u017Cna', 'Nie nale\u017Cy'] },
+    { q: '__________ negocjowa\u0107 \u2014 drzwi s\u0105 otwarte. (mo\u017Cliwo\u015B\u0107)', answer: 'Mo\u017Cna', options: ['Mo\u017Cna', 'Trzeba', 'Wolno', 'Nale\u017Cy'] },
+    { q: 'Kant m\u00F3wi\u0142: nie __________ k\u0142ama\u0107. Nigdy. (zakaz moralny)', answer: 'wolno', options: ['wolno', 'trzeba', 'mo\u017Cna', 'nale\u017Cy'] },
+    { q: '__________ pom\u00F3c mamie \u2014 jest sama. (konieczno\u015B\u0107)', answer: 'Trzeba', options: ['Trzeba', 'Mo\u017Cna', 'Wolno', 'Warto'] },
+    { q: '__________ szanowa\u0107 starszych. (formalnie)', answer: 'Nale\u017Cy', options: ['Nale\u017Cy', 'Trzeba', 'Mo\u017Cna', 'Wolno'] },
+    { q: '__________ spr\u00F3bowa\u0107 t\u0119 restauracj\u0119! (op\u0142aca si\u0119)', answer: 'Warto', options: ['Warto', 'Trzeba', 'Nale\u017Cy', 'Wolno'] },
+    { q: 'W muzeum nie __________ fotografowa\u0107. (zakaz)', answer: 'wolno', options: ['wolno', 'trzeba', 'mo\u017Cna', 'nale\u017Cy'] },
+    { q: '__________ uczy\u0107 si\u0119 polskiego \u2014 to pi\u0119kny j\u0119zyk. (op\u0142aca si\u0119)', answer: 'Warto', options: ['Warto', 'Trzeba', 'Nale\u017Cy', 'Mo\u017Cna'] }
+  ];
+
+  sections[14].questions = shuffle([
+    { q: 'brat', answer: 'bratu', hint: 'Wyj\u0105tek! -u zamiast -owi' },
+    { q: 'mama', answer: 'mamie', hint: '\u017Be\u0144ski: -a \u2192 -ie (m \u2192 mi)' },
+    { q: 'nauczyciel', answer: 'nauczycielowi', hint: 'M\u0119ski standardowy: + -owi' },
+    { q: 'siostra', answer: 'siostrze', hint: '\u017Be\u0144ski: -a \u2192 -e (r \u2192 rz)' },
+    { q: 'kolega', answer: 'koledze', hint: 'M\u0119ski na -a: (g \u2192 dz + e)' },
+    { q: 'przyjaciel', answer: 'przyjacielowi', hint: 'M\u0119ski standardowy: + -owi' },
+    { q: 'ojciec', answer: 'ojcu', hint: 'Wyj\u0105tek! -u zamiast -owi' },
+    { q: 'kole\u017Canka', answer: 'kole\u017Cance', hint: '\u017Be\u0144ski: -a \u2192 -e (k \u2192 c)' },
+    { q: 'dziecko', answer: 'dziecku', hint: 'Nijaki: -o \u2192 -u' },
+    { q: 'syn', answer: 'synowi', hint: 'M\u0119ski standardowy: + -owi' },
+    { q: 'pani', answer: 'pani', hint: '\u017Be\u0144ski mi\u0119kki: bez zmiany!' },
+    { q: 'Oleg', answer: 'Olegowi', hint: 'M\u0119ski standardowy: + -owi' }
+  ]).slice(0, 10);
+
+  // section 15 (index 15) — MC fixed
+  sections[15].questions = [
+    { q: 'Pomagam bratu. \u2192 Pomagam __________.', answer: 'mu', options: ['mu', 'mi', 'ci', 'jej'] },
+    { q: 'M\u00F3wi\u0119 prawd\u0119 mamie. \u2192 M\u00F3wi\u0119 __________ prawd\u0119.', answer: 'jej', options: ['jej', 'mu', 'ci', 'im'] },
+    { q: 'Dzi\u0119kuj\u0119 nauczycielowi i nauczycielce. \u2192 Dzi\u0119kuj\u0119 __________.', answer: 'im', options: ['im', 'mu', 'jej', 'nam'] },
+    { q: 'Ufam mojej \u017Conie. \u2192 Ufam __________.', answer: 'jej', options: ['jej', 'mu', 'ci', 'im'] },
+    { q: 'Nie przeszkadzaj siostrze! \u2192 Nie przeszkadzaj __________!', answer: 'jej', options: ['jej', 'mu', 'ci', 'im'] },
+    { q: 'Wybaczam Olegowi. \u2192 Wybaczam __________.', answer: 'mu', options: ['mu', 'jej', 'ci', 'im'] },
+    { q: 'Pomagamy dzieciom. \u2192 Pomagamy __________.', answer: 'im', options: ['im', 'nam', 'wam', 'mu'] },
+    { q: 'M\u00F3wi\u0119 prawd\u0119 tobie. \u2192 M\u00F3wi\u0119 __________ prawd\u0119.', answer: 'ci', options: ['ci', 'mi', 'mu', 'im'] }
+  ];
+
+  // section 16 (index 16) — typein_sentence fixed
+  sections[16].questions = [
+    { q: 'Musz\u0119 pom\u00F3c __________. (brat)', answer: 'bratu', hint: 'brat \u2192 bratu (wyj\u0105tek: -u)' },
+    { q: 'Powinienem wybaczy\u0107 __________. (kolega)', answer: 'koledze', hint: 'kolega \u2192 koledze (m\u0119ski na -a)' },
+    { q: 'Chc\u0119 zaufa\u0107 __________. (ty)', answer: ['ci', 'tobie'], hint: 'ty \u2192 ci (kr\u00F3tka) / tobie (d\u0142uga)' },
+    { q: 'Nie mog\u0119 ust\u0105pi\u0107 __________. (on)', answer: ['mu', 'jemu'], hint: 'on \u2192 mu (kr\u00F3tka) / jemu (d\u0142uga)' },
+    { q: 'Musimy podzi\u0119kowa\u0107 __________. (nauczycielka)', answer: 'nauczycielce', hint: 'nauczycielka \u2192 nauczycielce (k \u2192 c + e)' },
+    { q: 'Trzeba pom\u00F3c __________. (mama)', answer: 'mamie', hint: 'mama \u2192 mamie (m \u2192 mi + e)' },
+    { q: 'Nie wolno k\u0142ama\u0107 __________. (przyjaciele)', answer: 'przyjacio\u0142om', hint: 'l.mn. celownik: + -om' },
+    { q: 'Powiniene\u015B ufa\u0107 __________. (brat)', answer: 'bratu', hint: 'brat \u2192 bratu (wyj\u0105tek: -u)' }
+  ];
+
+  // section 17 (index 17) — TF, re-shuffle
+  sections[17].questions = shuffle([
+    { q: 'Rysy to najwy\u017Cszy szczyt w polskich Tatrach.', answer: true, explanation: 'Tak \u2014 Rysy maj\u0105 2499 m n.p.m.' },
+    { q: 'Morskie Oko jest najg\u0142\u0119bszym jeziorem w Tatrach.', answer: false, explanation: 'Najg\u0142\u0119bsze jest Wielki Staw Polski (79 m). Morskie Oko to najs\u0142ynniejsze jezioro.' },
+    { q: 'Kozica jest najwi\u0119kszym zwierz\u0119ciem w Tatrach.', answer: false, explanation: 'Najwi\u0119kszy jest nied\u017Awied\u017A brunatny (ponad 200 kg).' },
+    { q: 'Han urodzi\u0142 si\u0119 w Niemczech.', answer: false, explanation: 'Han urodzi\u0142 si\u0119 w Korei Po\u0142udniowej, w Seulu.' },
+    { q: 'Samoeksploatacja to kiedy szef zmusza ci\u0119 do pracy.', answer: false, explanation: 'Samoeksploatacja = sam siebie zmuszasz do pracy.' },
+    { q: 'Han proponuje odpoczynek, \u017Ceby potem lepiej pracowa\u0107.', answer: false, explanation: 'Han m\u00F3wi o odpoczynku BEZ celu \u2014 nie dla produktywno\u015Bci.' },
+    { q: '\u017Belazne prawo oligarchii m\u00F3wi, \u017Ce oligarchia to wina z\u0142ych ludzi.', answer: false, explanation: 'To strukturalna konieczno\u015B\u0107, nie wina konkretnych os\u00F3b.' },
+    { q: 'SPD g\u0142osowa\u0142a za wojn\u0105 w 1914 roku.', answer: true, explanation: 'Tak \u2014 liderzy wybrali przetrwanie partii kosztem jej antywojennych idea\u0142\u00F3w.' },
+    { q: 'Demokracja to stan, nie proces.', answer: false, explanation: 'Demokracja to PROCES \u2014 jak rower, jest stabilna tylko kiedy kr\u0119cisz peda\u0142ami.' },
+    { q: 'Arystoteles m\u00F3wi\u0142, \u017Ce cnota le\u017Cy pomi\u0119dzy dwiema skrajno\u015Bciami.', answer: true, explanation: 'Tak \u2014 to idea "z\u0142otego \u015Brodka" (np. odwaga mi\u0119dzy tch\u00F3rzostwem a g\u0142upot\u0105).' },
+    { q: 'Kant pozwala\u0142 k\u0142ama\u0107, je\u015Bli to chroni przyjaciela.', answer: false, explanation: 'Kant m\u00F3wi\u0142: nie wolno k\u0142ama\u0107 NIGDY \u2014 nawet \u017Ceby chroni\u0107 przyjaciela.' },
+    { q: 'Liberum veto wzmacnia\u0142o polskie pa\u0144stwo.', answer: false, explanation: 'Liberum veto OS\u0141ABIA\u0141O Polsk\u0119 \u2014 jeden szlachcic m\u00F3g\u0142 zablokowa\u0107 ca\u0142y sejm.' }
+  ]);
+
+  // Shuffle MC options on restart
+  sections.forEach(function(sec) {
     if (sec.type === 'mc') {
-      sec.questions.forEach(q => { q.options = shuffle(q.options); });
+      sec.questions.forEach(function(q) { q.options = shuffle(q.options); });
     }
   });
 
