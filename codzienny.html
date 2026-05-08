@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Codzienny Drill — Polski</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #1a1a2e;
+  --card: #16213e;
+  --card-hover: #1a2745;
+  --text: #e8e8e8;
+  --text-dim: #8899aa;
+  --accent: #fdcb6e;
+  --correct: #00b894;
+  --incorrect: #e17055;
+  --correct-bg: rgba(0, 184, 148, 0.15);
+  --incorrect-bg: rgba(225, 112, 85, 0.15);
+  --progress-bg: #0f3460;
+  --border: rgba(255,255,255,0.06);
+  --shadow: 0 4px 24px rgba(0,0,0,0.3);
+  --radius: 12px;
+}
+
+html { font-size: 16px; }
+
+body {
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100dvh;
+  line-height: 1.5;
+  -webkit-tap-highlight-color: transparent;
+  overflow-x: hidden;
+}
+
+/* Progress bar */
+.progress-container {
+  position: fixed; top: 0; left: 0; right: 0;
+  height: 4px; background: var(--progress-bg); z-index: 100;
+}
+.progress-bar {
+  height: 100%; background: var(--accent);
+  transition: width 0.4s ease; width: 0%;
+}
+
+/* Timer */
+.timer {
+  position: fixed; top: 8px; right: 12px; z-index: 101;
+  font-size: 0.8rem; color: var(--text-dim);
+  background: rgba(22, 33, 62, 0.9); padding: 4px 10px;
+  border-radius: 20px; backdrop-filter: blur(4px);
+}
+
+/* Main container */
+.container {
+  max-width: 540px; margin: 0 auto;
+  padding: 24px 16px 40px; min-height: 100dvh;
+}
+
+/* Screens */
+.screen { display: none; animation: fadeIn 0.35s ease; }
+.screen.active { display: block; }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Welcome */
+.welcome { text-align: center; padding-top: 15vh; }
+.welcome h1 { font-size: 1.8rem; margin-bottom: 8px; }
+.welcome .subtitle { color: var(--accent); font-size: 1.05rem; margin-bottom: 24px; }
+.welcome .desc { color: var(--text-dim); font-size: 0.95rem; margin-bottom: 32px; line-height: 1.6; }
+.welcome .time-hint { color: var(--text-dim); font-size: 0.85rem; margin-bottom: 28px; }
+
+/* Buttons */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: 14px 32px; border: none; border-radius: var(--radius);
+  font-size: 1.05rem; font-weight: 600; cursor: pointer;
+  transition: all 0.2s ease; min-height: 48px;
+  -webkit-user-select: none; user-select: none;
+}
+.btn-primary {
+  background: var(--accent); color: #1a1a2e;
+}
+.btn-primary:active { transform: scale(0.97); filter: brightness(0.9); }
+.btn-next {
+  background: var(--accent); color: #1a1a2e;
+  width: 100%; margin-top: 16px;
+}
+.btn-next:disabled {
+  background: #3a3a5e; color: #666; cursor: not-allowed;
+}
+.btn-tf {
+  flex: 1; padding: 14px 20px; border: 2px solid var(--border);
+  background: var(--card); color: var(--text); border-radius: var(--radius);
+  font-size: 1rem; font-weight: 600; cursor: pointer;
+  transition: all 0.2s ease; min-height: 52px;
+}
+.btn-tf:active { transform: scale(0.97); }
+.btn-tf.selected-correct {
+  border-color: var(--correct); background: var(--correct-bg); color: var(--correct);
+}
+.btn-tf.selected-incorrect {
+  border-color: var(--incorrect); background: var(--incorrect-bg); color: var(--incorrect);
+}
+.btn-tf.reveal-correct {
+  border-color: var(--correct); background: var(--correct-bg); color: var(--correct);
+}
+.btn-tf:disabled { cursor: not-allowed; opacity: 0.7; }
+
+/* Section header */
+.section-header {
+  text-align: center; padding: 32px 0 20px;
+}
+.section-header .emoji { font-size: 2rem; margin-bottom: 8px; }
+.section-header h2 { font-size: 1.3rem; color: var(--accent); margin-bottom: 4px; }
+.section-header .section-desc { color: var(--text-dim); font-size: 0.88rem; }
+.section-header .section-count {
+  display: inline-block; margin-top: 10px; padding: 4px 14px;
+  background: rgba(253,203,110,0.1); border-radius: 20px;
+  font-size: 0.8rem; color: var(--accent);
+}
+
+/* Question card */
+.question-card {
+  background: var(--card); border-radius: var(--radius);
+  padding: 24px 20px; box-shadow: var(--shadow);
+  border: 1px solid var(--border);
+}
+.q-counter {
+  font-size: 0.8rem; color: var(--text-dim); margin-bottom: 12px;
+}
+.q-prompt {
+  font-size: 1.15rem; font-weight: 600; margin-bottom: 20px; line-height: 1.45;
+}
+.q-prompt .highlight {
+  color: var(--accent); background: rgba(253,203,110,0.1);
+  padding: 2px 6px; border-radius: 4px;
+}
+.q-prompt .gap {
+  display: inline-block; min-width: 100px; border-bottom: 2px dashed var(--accent);
+  margin: 0 2px;
+}
+
+/* Multiple choice options */
+.options { display: flex; flex-direction: column; gap: 10px; }
+.option {
+  display: block; width: 100%; padding: 14px 16px;
+  background: rgba(255,255,255,0.03); border: 2px solid var(--border);
+  border-radius: var(--radius); color: var(--text);
+  font-size: 1rem; text-align: left; cursor: pointer;
+  transition: all 0.2s ease; min-height: 48px;
+  -webkit-user-select: none; user-select: none;
+}
+.option:active { transform: scale(0.98); }
+.option.selected-correct {
+  border-color: var(--correct); background: var(--correct-bg);
+  color: var(--correct); font-weight: 600;
+}
+.option.selected-incorrect {
+  border-color: var(--incorrect); background: var(--incorrect-bg);
+  color: var(--incorrect);
+  animation: shake 0.4s ease;
+}
+.option.reveal-correct {
+  border-color: var(--correct); background: var(--correct-bg);
+  color: var(--correct); font-weight: 600;
+}
+.option:disabled { cursor: not-allowed; }
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-6px); }
+  40% { transform: translateX(6px); }
+  60% { transform: translateX(-4px); }
+  80% { transform: translateX(4px); }
+}
+
+/* Correct flash */
+@keyframes correctFlash {
+  0% { box-shadow: 0 0 0 0 rgba(0,184,148,0.4); }
+  50% { box-shadow: 0 0 20px 4px rgba(0,184,148,0.2); }
+  100% { box-shadow: 0 0 0 0 rgba(0,184,148,0); }
+}
+.flash-correct { animation: correctFlash 0.6s ease; }
+
+/* Type-in input */
+.type-in-wrapper { margin-top: 4px; }
+.type-in {
+  width: 100%; padding: 14px 16px;
+  background: rgba(255,255,255,0.05); border: 2px solid var(--border);
+  border-radius: var(--radius); color: var(--text);
+  font-size: 1.05rem; outline: none;
+  transition: border-color 0.2s;
+}
+.type-in:focus { border-color: var(--accent); }
+.type-in.correct { border-color: var(--correct); background: var(--correct-bg); }
+.type-in.incorrect { border-color: var(--incorrect); background: var(--incorrect-bg); }
+.type-in:disabled { opacity: 0.7; }
+
+.btn-check {
+  width: 100%; margin-top: 10px; padding: 14px;
+  background: var(--accent); color: #1a1a2e; border: none;
+  border-radius: var(--radius); font-size: 1rem; font-weight: 600;
+  cursor: pointer; min-height: 48px;
+}
+.btn-check:active { transform: scale(0.97); }
+
+/* Feedback */
+.feedback {
+  margin-top: 14px; padding: 12px 16px;
+  border-radius: var(--radius); font-size: 0.9rem; line-height: 1.5;
+  display: none;
+}
+.feedback.show { display: block; animation: fadeIn 0.3s ease; }
+.feedback.correct-fb {
+  background: var(--correct-bg); border-left: 3px solid var(--correct); color: var(--correct);
+}
+.feedback.incorrect-fb {
+  background: var(--incorrect-bg); border-left: 3px solid var(--incorrect); color: #f0a090;
+}
+
+/* True/False buttons row */
+.tf-row { display: flex; gap: 12px; }
+
+/* Results */
+.results { text-align: center; padding-top: 8vh; }
+.results .grade-emoji { font-size: 3.5rem; margin-bottom: 12px; }
+.results .grade-label { font-size: 1.5rem; font-weight: 700; margin-bottom: 4px; }
+.results .score-main {
+  font-size: 2.2rem; font-weight: 800; color: var(--accent); margin: 12px 0;
+}
+.results .score-pct { font-size: 1rem; color: var(--text-dim); margin-bottom: 28px; }
+
+.section-scores {
+  text-align: left; background: var(--card); border-radius: var(--radius);
+  padding: 20px; margin-bottom: 24px; box-shadow: var(--shadow);
+  border: 1px solid var(--border);
+}
+.section-scores h3 { font-size: 1rem; margin-bottom: 14px; color: var(--accent); }
+.section-score-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 8px 0; border-bottom: 1px solid var(--border);
+  font-size: 0.9rem;
+}
+.section-score-row:last-child { border-bottom: none; }
+.section-score-row .name { flex: 1; }
+.section-score-row .score {
+  font-weight: 700; min-width: 60px; text-align: right;
+}
+.section-score-bar {
+  width: 60px; height: 6px; background: var(--progress-bg);
+  border-radius: 3px; margin-left: 10px; overflow: hidden;
+}
+.section-score-fill {
+  height: 100%; border-radius: 3px;
+  transition: width 0.6s ease;
+}
+
+.results-buttons { display: flex; flex-direction: column; gap: 12px; margin-top: 20px; }
+.btn-share {
+  background: transparent; border: 2px solid var(--accent);
+  color: var(--accent); width: 100%; padding: 14px;
+  border-radius: var(--radius); font-size: 1rem; font-weight: 600;
+  cursor: pointer; min-height: 48px;
+}
+.btn-share:active { transform: scale(0.97); }
+.btn-restart {
+  background: var(--card); border: 2px solid var(--border);
+  color: var(--text); width: 100%; padding: 14px;
+  border-radius: var(--radius); font-size: 1rem; font-weight: 600;
+  cursor: pointer; min-height: 48px;
+}
+.btn-restart:active { transform: scale(0.97); }
+
+.copied-toast {
+  position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+  background: var(--correct); color: #fff; padding: 10px 24px;
+  border-radius: 24px; font-size: 0.9rem; font-weight: 600;
+  opacity: 0; transition: opacity 0.3s; z-index: 200;
+  pointer-events: none;
+}
+.copied-toast.show { opacity: 1; }
+
+.elapsed {
+  color: var(--text-dim); font-size: 0.85rem; margin-bottom: 20px;
+}
+</style>
+</head>
+<body>
+
+<div class="progress-container"><div class="progress-bar" id="progressBar"></div></div>
+<div class="timer" id="timer" style="display:none;">00:00</div>
+<div class="copied-toast" id="copiedToast">Skopiowano!</div>
+
+<div class="container" id="app">
+
+  <!-- Welcome -->
+  <div class="screen active" id="welcomeScreen">
+    <div class="welcome">
+      <h1>&#x26A1; Codzienny Drill</h1>
+      <div class="subtitle">5 minut dziennie &#x2014; mieszanka ze wszystkiego</div>
+      <div class="desc">
+        15 losowych pyta&#x0144; ze wszystkich lekcji: s&#x0142;&#x00F3;wka, przypadki,<br>
+        stopniowanie, modalne. Ka&#x017C;dego dnia inne pytania!
+      </div>
+      <div class="time-hint">&#x23F1;&#xFE0F; Szacowany czas: ~5 min</div>
+      <button class="btn btn-primary" onclick="startQuiz()">Zaczynamy!</button>
+    </div>
+  </div>
+
+  <!-- Quiz area (filled dynamically) -->
+  <div class="screen" id="quizScreen"></div>
+
+  <!-- Results -->
+  <div class="screen" id="resultsScreen"></div>
+
+</div>
+
+<script>
+// ===== HELPERS =====
+function shuffle(arr) {
+  var a = arr.slice();
+  for (var i = a.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var tmp = a[i]; a[i] = a[j]; a[j] = tmp;
+  }
+  return a;
+}
+
+function normalize(s) {
+  return s.trim().toLowerCase();
+}
+
+function stripDiacritics(s) {
+  return s
+    .replace(/[ąĄ]/g, 'a')
+    .replace(/[ćĆ]/g, 'c')
+    .replace(/[ęĘ]/g, 'e')
+    .replace(/[łŁ]/g, 'l')
+    .replace(/[ńŃ]/g, 'n')
+    .replace(/[óÓ]/g, 'o')
+    .replace(/[śŚ]/g, 's')
+    .replace(/[źŹ]/g, 'z')
+    .replace(/[żŻ]/g, 'z');
+}
+
+function escapeAttr(s) {
+  return s.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+}
+
+// ===== QUESTION POOLS =====
+
+var pool1 = [
+  { q: 'wzorzec', answer: 'паттерн, образец', options: ['паттерн, образец', 'пример', 'результат', 'причина'] },
+  { q: 'kryzys', answer: 'кризис', options: ['кризис', 'компромисс', 'конфликт', 'контроль'] },
+  { q: 'władza', answer: 'власть', options: ['власть', 'свобода', 'война', 'закон'] },
+  { q: 'wolność', answer: 'свобода', options: ['свобода', 'власть', 'воля', 'счастье'] },
+  { q: 'zmęczenie', answer: 'усталость', options: ['усталость', 'ленивость', 'тревога', 'слабость'] },
+  { q: 'wypalenie', answer: 'выгорание', options: ['выгорание', 'наказание', 'депрессия', 'соревнование'] },
+  { q: 'odwaga', answer: 'храбрость', options: ['храбрость', 'трусость', 'гордость', 'ум'] },
+  { q: 'zdrada', answer: 'предательство', options: ['предательство', 'верность', 'честность', 'компромисс'] },
+  { q: 'przetrwanie', answer: 'выживание', options: ['выживание', 'страдание', 'победа', 'бегство'] },
+  { q: 'bogactwo', answer: 'богатство', options: ['богатство', 'бедность', 'экономика', 'работа'] },
+  { q: 'zaufanie', answer: 'доверие', options: ['доверие', 'уважение', 'страх', 'знание'] },
+  { q: 'upadek', answer: 'упадок', options: ['упадок', 'подъём', 'кризис', 'война'] },
+  { q: 'narracja', answer: 'нарратив', options: ['нарратив', 'история', 'правда', 'ложь'] },
+  { q: 'reforma', answer: 'реформа', options: ['реформа', 'революция', 'реакция', 'регресс'] },
+  { q: 'kompromis', answer: 'компромисс', options: ['компромисс', 'конфликт', 'контракт', 'результат'] },
+  { q: 'przyroda', answer: 'природа', options: ['природа', 'погода', 'культура', 'история'] },
+  { q: 'szczyt', answer: 'вершина', options: ['вершина', 'долина', 'река', 'гора'] },
+  { q: 'społeczeństwo', answer: 'общество', options: ['общество', 'экономика', 'политика', 'государство'] },
+  { q: 'hojność', answer: 'щедрость', options: ['щедрость', 'жадность', 'бедность', 'гордость'] },
+  { q: 'narzędzie', answer: 'инструмент', options: ['инструмент', 'результат', 'метод', 'теория'] }
+];
+
+var pool2 = [
+  { q: 'Tatry to __________ (wysoki) góry w Polsce. [stopniowanie]', answer: 'najwyższe', hint: 'Stopień najwyższy + l.mn.' },
+  { q: 'Mam __________ (nowa praca). [biernik]', answer: 'nową pracę', hint: 'Żeński biernik: -a→-ę, -a→-ą' },
+  { q: 'Jestem __________ (student). [narzędnik]', answer: 'studentem', hint: 'Narzędnik męski: + -em' },
+  { q: 'Pomagam __________ (brat). [celownik]', answer: 'bratu', hint: 'Celownik: brat → bratu' },
+  { q: 'Bez __________ (kryzys) nie ma zmian. [dopełniacz]', answer: 'kryzysu', hint: 'Dopełniacz męski: -u' },
+  { q: 'Rysy są __________ (wysoki) niż Giewont. [stopniowanie]', answer: 'wyższe', hint: 'Stopień wyższy + l.mn.: wyższe' },
+  { q: '__________ (musieć, ja) iść do pracy. [modalne]', answer: 'Muszę', hint: 'musieć: ja → muszę' },
+  { q: 'Interesuję się __________ (polityka). [narzędnik]', answer: 'polityką', hint: 'Narzędnik żeński: -a → -ą' },
+  { q: 'Nie mam __________ (czas). [dopełniacz]', answer: 'czasu', hint: 'Dopełniacz męski: -u' },
+  { q: 'Dziękuję __________ (nauczyciel). [celownik]', answer: 'nauczycielowi', hint: 'Celownik: + -owi' },
+  { q: 'Widzę __________ (piękna kobieta). [biernik]', answer: 'piękną kobietę', hint: 'Biernik żeński: -a→-ę, -a→-ą' },
+  { q: 'Morskie Oko to __________ (słynny) jezioro. [stopniowanie]', answer: 'najsłynniejsze', hint: 'Stopień najwyższy + nijaki' },
+  { q: 'Podczas __________ (pandemia) zamknęli szkoły. [dopełniacz]', answer: 'pandemii', hint: 'Dopełniacz: pandemia → pandemii' },
+  { q: 'Mówię prawdę __________ (mama). [celownik]', answer: 'mamie', hint: 'Celownik: mama → mamie' },
+  { q: '__________ (chcieć, my) porozmawiać. [modalne]', answer: 'Chcemy', hint: 'chcieć: my → chcemy' },
+  { q: 'Dużo __________ (pieniądze). [dopełniacz]', answer: 'pieniędzy', hint: 'Nieregularne! pieniądze → pieniędzy' }
+];
+
+var pool3 = [
+  { q: 'Dopełniacz odpowiada na pytanie: Kogo? Czego?', answer: true, explanation: 'Tak — to pytania dopełniacza (Genitive).' },
+  { q: 'Biernik męski nieżywotny = mianownik.', answer: true, explanation: 'Tak — np. widzę DOM (nie: domu).' },
+  { q: '"Nie mam" wymaga biernika.', answer: false, explanation: 'Nie! „Nie mam" wymaga DOPEŁNIACZA: nie mam czasu (nie: czas).' },
+  { q: 'Narzędnik odpowiada na pytanie: Kim? Czym?', answer: true, explanation: 'Tak — np. jestem studentEM, jadę samochodEM.' },
+  { q: 'Celownik odpowiada na pytanie: Kogo? Co?', answer: false, explanation: 'Nie! Celownik = Komu? Czemu? (np. pomagam BRATU). Kogo? Co? = Biernik.' },
+  { q: 'Imperium w dopełniaczu to „imperium" (bez zmian).', answer: true, explanation: 'Tak — rzeczowniki na -um nie zmieniają się w dopełniaczu l.poj.' },
+  { q: 'Stopień wyższy od „duży" to „duższy".', answer: false, explanation: 'Nie! duży → WIĘKSZY (nieregularny).' },
+  { q: 'Po „bez" używamy dopełniacza.', answer: true, explanation: 'Tak — bez + dopełniacz: bez kryzysu, bez wolności.' },
+  { q: '"Pomagać" wymaga celownika.', answer: true, explanation: 'Tak — pomagam BRATU (celownik), nie: brata.' },
+  { q: 'Żeński narzędnik to końcówka -ę.', answer: false, explanation: 'Nie! Żeński narzędnik = -Ą (np. polityką, firmą). Końcówka -ę to BIERNIK.' },
+  { q: '"Pieniądze" w dopełniaczu to „pieniądzów".', answer: false, explanation: 'Nie! Poprawnie: pieniĘdzy (nieregularne).' },
+  { q: 'Ray Dalio jest historykiem.', answer: false, explanation: 'Nie — Dalio jest INWESTOREM (założyciel Bridgewater Associates), nie historykiem.' }
+];
+
+// ===== DATA =====
+
+var sections = [
+  {
+    id: 's1', emoji: '\u{1F4AC}', title: 'Szybkie s\u0142\u00F3wka',
+    desc: 'Wybierz poprawne t\u0142umaczenie', type: 'mc', count: 5,
+    questions: shuffle(pool1).slice(0, 5)
+  },
+  {
+    id: 's2', emoji: '\u270D\uFE0F', title: 'Szybka gramatyka',
+    desc: 'Wstaw poprawn\u0105 form\u0119', type: 'typein_sentence', count: 5,
+    questions: shuffle(pool2).slice(0, 5)
+  },
+  {
+    id: 's3', emoji: '\u{1F9D0}', title: 'Prawda czy fa\u0142sz?',
+    desc: 'Oce\u0144, czy zdanie jest prawdziwe', type: 'tf', count: 5,
+    questions: shuffle(pool3).slice(0, 5)
+  }
+];
+
+// ===== STATE =====
+var currentSection = 0;
+var currentQuestion = 0;
+var sectionScores = [];
+var totalCorrect = 0;
+var totalQuestions = 0;
+var startTime = null;
+var timerInterval = null;
+var answered = false;
+var flatIndex = 0;
+var currentQData = null;
+
+// ===== ENGINE HELPERS =====
+
+function getTotalQ() {
+  return sections.reduce(function(s, sec) { return s + sec.questions.length; }, 0);
+}
+
+function updateProgress() {
+  var total = getTotalQ();
+  var pct = (flatIndex / total) * 100;
+  document.getElementById('progressBar').style.width = pct + '%';
+}
+
+function startTimer() {
+  startTime = Date.now();
+  var el = document.getElementById('timer');
+  el.style.display = 'block';
+  timerInterval = setInterval(function() {
+    var diff = Date.now() - startTime;
+    var m = Math.floor(diff / 60000);
+    var s = Math.floor((diff % 60000) / 1000);
+    el.textContent = String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+  }, 1000);
+}
+
+function stopTimer() {
+  clearInterval(timerInterval);
+}
+
+function getElapsed() {
+  if (!startTime) return '00:00';
+  var diff = Date.now() - startTime;
+  var m = Math.floor(diff / 60000);
+  var s = Math.floor((diff % 60000) / 1000);
+  return String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+}
+
+// ===== QUIZ ENGINE =====
+
+function startQuiz() {
+  // Shuffle options for MC questions
+  sections.forEach(function(sec) {
+    if (sec.type === 'mc') {
+      sec.questions.forEach(function(q) { q.options = shuffle(q.options); });
+    }
+  });
+
+  currentSection = 0;
+  currentQuestion = 0;
+  sectionScores = sections.map(function() { return { correct: 0, total: 0 }; });
+  totalCorrect = 0;
+  flatIndex = 0;
+  totalQuestions = getTotalQ();
+  answered = false;
+  currentQData = null;
+
+  document.getElementById('welcomeScreen').classList.remove('active');
+  document.getElementById('quizScreen').classList.add('active');
+  startTimer();
+  renderSectionIntro();
+}
+
+function renderSectionIntro() {
+  var sec = sections[currentSection];
+  var area = document.getElementById('quizScreen');
+  area.innerHTML =
+    '<div class="section-header">' +
+      '<div class="emoji">' + sec.emoji + '</div>' +
+      '<h2>' + sec.title + '</h2>' +
+      '<div class="section-desc">' + sec.desc + '</div>' +
+      '<div class="section-count">Sekcja ' + (currentSection + 1) + ' / ' + sections.length + ' \u2014 ' + sec.questions.length + ' pyta\u0144</div>' +
+    '</div>' +
+    '<button class="btn btn-next" onclick="renderQuestion()" style="margin-top:20px;">Start \u27A1\uFE0F</button>';
+  updateProgress();
+}
+
+function renderQuestion() {
+  var sec = sections[currentSection];
+  var q = sec.questions[currentQuestion];
+  answered = false;
+  currentQData = null;
+  var area = document.getElementById('quizScreen');
+  var qNum = currentQuestion + 1;
+  var qTotal = sec.questions.length;
+
+  if (sec.type === 'mc') {
+    renderMC(area, sec, q, qNum, qTotal);
+  } else if (sec.type === 'typein') {
+    renderTypeIn(area, sec, q, qNum, qTotal);
+  } else if (sec.type === 'typein_sentence') {
+    renderTypeInSentence(area, sec, q, qNum, qTotal);
+  } else if (sec.type === 'tf') {
+    renderTF(area, sec, q, qNum, qTotal);
+  }
+  updateProgress();
+}
+
+function renderMC(area, sec, q, qNum, qTotal) {
+  var promptHTML;
+  // For fill-in-the-blank style questions (contain __________)
+  if (q.q.indexOf('__________') !== -1) {
+    promptHTML = q.q.replace('__________', '<span class="gap">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>');
+  } else {
+    // For translation / definition style — highlight the word/definition
+    promptHTML = '<span class="highlight">' + q.q + '</span>';
+  }
+
+  var optionsHTML = '';
+  for (var i = 0; i < q.options.length; i++) {
+    optionsHTML += '<button class="option" data-idx="' + i + '" onclick="selectMC(this, \'' + escapeAttr(q.options[i]) + '\', \'' + escapeAttr(q.answer) + '\')">' + q.options[i] + '</button>';
+  }
+
+  area.innerHTML =
+    '<div class="section-header" style="padding-top:16px;padding-bottom:10px;">' +
+      '<h2 style="font-size:1rem;">' + sec.emoji + ' ' + sec.title + '</h2>' +
+    '</div>' +
+    '<div class="question-card">' +
+      '<div class="q-counter">Pytanie ' + qNum + ' / ' + qTotal + '</div>' +
+      '<div class="q-prompt">' + promptHTML + '</div>' +
+      '<div class="options">' + optionsHTML + '</div>' +
+      '<div class="feedback" id="feedback"></div>' +
+    '</div>' +
+    '<button class="btn btn-next" id="btnNext" disabled onclick="nextQuestion()">Dalej \u27A1\uFE0F</button>';
+}
+
+function selectMC(btn, selected, correct) {
+  if (answered) return;
+  answered = true;
+  var options = document.querySelectorAll('.option');
+  options.forEach(function(o) { o.disabled = true; });
+
+  var isCorrect = selected === correct;
+  if (isCorrect) {
+    btn.classList.add('selected-correct');
+    btn.closest('.question-card').classList.add('flash-correct');
+    showFeedback(true, '');
+    recordAnswer(true);
+  } else {
+    btn.classList.add('selected-incorrect');
+    options.forEach(function(o) {
+      if (o.textContent === correct) o.classList.add('reveal-correct');
+    });
+    showFeedback(false, 'Poprawna odpowied\u017A: <strong>' + correct + '</strong>');
+    recordAnswer(false);
+  }
+  document.getElementById('btnNext').disabled = false;
+}
+
+function renderTypeIn(area, sec, q, qNum, qTotal) {
+  currentQData = q;
+  var promptHTML;
+  if (sec.prompt) {
+    promptHTML = sec.prompt.replace('{word}', '<span class="highlight">' + q.q + '</span>');
+  } else {
+    promptHTML = 'Wpisz odpowied\u017A dla: <span class="highlight">' + q.q + '</span>';
+  }
+
+  area.innerHTML =
+    '<div class="section-header" style="padding-top:16px;padding-bottom:10px;">' +
+      '<h2 style="font-size:1rem;">' + sec.emoji + ' ' + sec.title + '</h2>' +
+    '</div>' +
+    '<div class="question-card">' +
+      '<div class="q-counter">Pytanie ' + qNum + ' / ' + qTotal + '</div>' +
+      '<div class="q-prompt">' + promptHTML + '</div>' +
+      '<div class="type-in-wrapper">' +
+        '<input type="text" class="type-in" id="typeInput" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Twoja odpowied\u017A...">' +
+        '<button class="btn-check" id="btnCheck" onclick="checkCurrentAnswer()">Sprawd\u017A</button>' +
+      '</div>' +
+      '<div class="feedback" id="feedback"></div>' +
+    '</div>' +
+    '<button class="btn btn-next" id="btnNext" disabled onclick="nextQuestion()">Dalej \u27A1\uFE0F</button>';
+
+  var input = document.getElementById('typeInput');
+  input.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' && !answered) {
+      document.getElementById('btnCheck').click();
+    }
+  });
+  input.focus();
+}
+
+function renderTypeInSentence(area, sec, q, qNum, qTotal) {
+  currentQData = q;
+  var promptHTML = q.q.replace('__________', '<span class="gap">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>');
+
+  area.innerHTML =
+    '<div class="section-header" style="padding-top:16px;padding-bottom:10px;">' +
+      '<h2 style="font-size:1rem;">' + sec.emoji + ' ' + sec.title + '</h2>' +
+    '</div>' +
+    '<div class="question-card">' +
+      '<div class="q-counter">Pytanie ' + qNum + ' / ' + qTotal + '</div>' +
+      '<div class="q-prompt">' + promptHTML + '</div>' +
+      '<div class="type-in-wrapper">' +
+        '<input type="text" class="type-in" id="typeInput" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Twoja odpowied\u017A...">' +
+        '<button class="btn-check" id="btnCheck" onclick="checkCurrentAnswer()">Sprawd\u017A</button>' +
+      '</div>' +
+      '<div class="feedback" id="feedback"></div>' +
+    '</div>' +
+    '<button class="btn btn-next" id="btnNext" disabled onclick="nextQuestion()">Dalej \u27A1\uFE0F</button>';
+
+  var input = document.getElementById('typeInput');
+  input.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' && !answered) {
+      document.getElementById('btnCheck').click();
+    }
+  });
+  input.focus();
+}
+
+function checkCurrentAnswer() {
+  if (answered) return;
+  answered = true;
+  var q = currentQData;
+  var input = document.getElementById('typeInput');
+  var val = input.value;
+  var correct = q.answer;
+  var displayAnswer = Array.isArray(correct) ? correct[0] : correct;
+  var hint = q.hint || '';
+
+  var isRight = Array.isArray(correct)
+    ? correct.some(function(a) { return normalize(val) === normalize(a); })
+    : normalize(val) === normalize(correct);
+
+  var isAlmost = !isRight && (Array.isArray(correct)
+    ? correct.some(function(a) { return stripDiacritics(normalize(val)) === stripDiacritics(normalize(a)); })
+    : stripDiacritics(normalize(val)) === stripDiacritics(normalize(correct)));
+
+  input.disabled = true;
+  document.getElementById('btnCheck').style.display = 'none';
+
+  if (isRight) {
+    input.classList.add('correct');
+    input.closest('.question-card').classList.add('flash-correct');
+    showFeedback(true, hint ? '\u{1F4A1} ' + hint : '');
+    recordAnswer(true);
+  } else if (isAlmost) {
+    input.classList.add('incorrect');
+    showFeedback(false, 'Prawie! Pami\u0119taj o polskich znakach: <strong>' + displayAnswer + '</strong>' + (hint ? '<br>\u{1F4A1} ' + hint : ''));
+    recordAnswer(false);
+  } else {
+    input.classList.add('incorrect');
+    showFeedback(false, 'Poprawna odpowied\u017A: <strong>' + displayAnswer + '</strong>' + (hint ? '<br>\u{1F4A1} ' + hint : ''));
+    recordAnswer(false);
+  }
+  document.getElementById('btnNext').disabled = false;
+}
+
+function renderTF(area, sec, q, qNum, qTotal) {
+  area.innerHTML =
+    '<div class="section-header" style="padding-top:16px;padding-bottom:10px;">' +
+      '<h2 style="font-size:1rem;">' + sec.emoji + ' ' + sec.title + '</h2>' +
+    '</div>' +
+    '<div class="question-card">' +
+      '<div class="q-counter">Pytanie ' + qNum + ' / ' + qTotal + '</div>' +
+      '<div class="q-prompt">\u00AB' + q.q + '\u00BB</div>' +
+      '<div class="tf-row">' +
+        '<button class="btn-tf" onclick="selectTF(this, true, ' + q.answer + ', \'' + escapeAttr(q.explanation) + '\')">\u2705 PRAWDA</button>' +
+        '<button class="btn-tf" onclick="selectTF(this, false, ' + q.answer + ', \'' + escapeAttr(q.explanation) + '\')">\u274C FA\u0141SZ</button>' +
+      '</div>' +
+      '<div class="feedback" id="feedback"></div>' +
+    '</div>' +
+    '<button class="btn btn-next" id="btnNext" disabled onclick="nextQuestion()">Dalej \u27A1\uFE0F</button>';
+}
+
+function selectTF(btn, selected, correct, explanation) {
+  if (answered) return;
+  answered = true;
+  var buttons = document.querySelectorAll('.btn-tf');
+  buttons.forEach(function(b) { b.disabled = true; });
+
+  var isCorrect = selected === correct;
+  if (isCorrect) {
+    btn.classList.add('selected-correct');
+    btn.closest('.question-card').classList.add('flash-correct');
+    showFeedback(true, explanation);
+    recordAnswer(true);
+  } else {
+    btn.classList.add('selected-incorrect');
+    buttons.forEach(function(b) {
+      var bVal = b.textContent.indexOf('PRAWDA') !== -1;
+      if (bVal === correct) b.classList.add('reveal-correct');
+    });
+    showFeedback(false, explanation);
+    recordAnswer(false);
+  }
+  document.getElementById('btnNext').disabled = false;
+}
+
+function showFeedback(isCorrect, msg) {
+  var fb = document.getElementById('feedback');
+  fb.className = 'feedback show ' + (isCorrect ? 'correct-fb' : 'incorrect-fb');
+  fb.innerHTML = (isCorrect ? '\u2705 Dobrze!' : '\u274C Niestety...') + (msg ? '<br>' + msg : '');
+}
+
+function recordAnswer(isCorrect) {
+  sectionScores[currentSection].total++;
+  if (isCorrect) {
+    sectionScores[currentSection].correct++;
+    totalCorrect++;
+  }
+  flatIndex++;
+}
+
+function nextQuestion() {
+  var sec = sections[currentSection];
+  currentQuestion++;
+  if (currentQuestion >= sec.questions.length) {
+    currentSection++;
+    currentQuestion = 0;
+    if (currentSection >= sections.length) {
+      showResults();
+      return;
+    }
+    renderSectionIntro();
+  } else {
+    renderQuestion();
+  }
+}
+
+// ===== RESULTS =====
+
+function showResults() {
+  stopTimer();
+  var elapsed = getElapsed();
+  var total = getTotalQ();
+  var pct = Math.round((totalCorrect / total) * 100);
+
+  var emoji, label;
+  if (pct >= 90) { emoji = '\u{1F3C6}'; label = 'Mistrz!'; }
+  else if (pct >= 70) { emoji = '\u{1F4AA}'; label = 'Bardzo dobrze!'; }
+  else if (pct >= 50) { emoji = '\u{1F4DA}'; label = 'Trzeba powt\u00F3rzy\u0107'; }
+  else { emoji = '\u{1F504}'; label = 'Powt\u00F3rz lekcj\u0119'; }
+
+  document.getElementById('progressBar').style.width = '100%';
+  document.getElementById('quizScreen').classList.remove('active');
+  var area = document.getElementById('resultsScreen');
+  area.classList.add('active');
+
+  var rowsHTML = '';
+  for (var i = 0; i < sections.length; i++) {
+    var sec = sections[i];
+    var sc = sectionScores[i];
+    var secPct = sc.total > 0 ? Math.round((sc.correct / sc.total) * 100) : 0;
+    var barColor = secPct >= 70 ? 'var(--correct)' : secPct >= 50 ? 'var(--accent)' : 'var(--incorrect)';
+    rowsHTML +=
+      '<div class="section-score-row">' +
+        '<span class="name">' + sec.emoji + ' ' + sec.title + '</span>' +
+        '<span class="score">' + sc.correct + '/' + sc.total + '</span>' +
+        '<div class="section-score-bar"><div class="section-score-fill" style="width:' + secPct + '%;background:' + barColor + ';"></div></div>' +
+      '</div>';
+  }
+
+  var emojiGrade;
+  if (pct >= 90) emojiGrade = '\u{1F3C6}';
+  else if (pct >= 70) emojiGrade = '\u{1F4AA}';
+  else if (pct >= 50) emojiGrade = '\u{1F4DA}';
+  else emojiGrade = '\u{1F504}';
+
+  area.innerHTML =
+    '<div class="results">' +
+      '<div class="grade-emoji">' + emoji + '</div>' +
+      '<div class="grade-label">' + label + '</div>' +
+      '<div class="score-main">' + totalCorrect + ' / ' + total + '</div>' +
+      '<div class="score-pct">' + pct + '% poprawnych odpowiedzi</div>' +
+      '<div class="elapsed">\u23F1\uFE0F Czas: ' + elapsed + '</div>' +
+      '<div class="section-scores">' +
+        '<h3>Wyniki sekcji</h3>' +
+        rowsHTML +
+      '</div>' +
+      '<div class="results-buttons">' +
+        '<button class="btn-share" onclick="shareResult(' + totalCorrect + ', ' + total + ', ' + pct + ', \'' + emojiGrade + '\')">\u{1F4CB} Podziel si\u0119 wynikiem</button>' +
+        '<button class="btn-restart" onclick="restart()">\u{1F504} Spr\u00F3buj jeszcze raz</button>' +
+      '</div>' +
+    '</div>';
+}
+
+function shareResult(correct, total, pct, emoji) {
+  var text = '\u26A1 Codzienny Drill \u2014 Polski\nM\u00F3j wynik: ' + correct + '/' + total + ' (' + pct + '%)\n' + emoji;
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(function() { showToast(); }).catch(function() { fallbackCopy(text); });
+  } else {
+    fallbackCopy(text);
+  }
+}
+
+function fallbackCopy(text) {
+  var ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.position = 'fixed';
+  ta.style.left = '-9999px';
+  document.body.appendChild(ta);
+  ta.select();
+  try { document.execCommand('copy'); showToast(); } catch(e) {}
+  document.body.removeChild(ta);
+}
+
+function showToast() {
+  var t = document.getElementById('copiedToast');
+  t.classList.add('show');
+  setTimeout(function() { t.classList.remove('show'); }, 2000);
+}
+
+function restart() {
+  document.getElementById('resultsScreen').classList.remove('active');
+  document.getElementById('progressBar').style.width = '0%';
+  document.getElementById('timer').style.display = 'none';
+  stopTimer();
+
+  // Re-shuffle pools and re-slice for fresh random questions
+  sections[0].questions = shuffle(pool1).slice(0, 5);
+  sections[1].questions = shuffle(pool2).slice(0, 5);
+  sections[2].questions = shuffle(pool3).slice(0, 5);
+
+  // Shuffle MC options on restart
+  sections.forEach(function(sec) {
+    if (sec.type === 'mc') {
+      sec.questions.forEach(function(q) { q.options = shuffle(q.options); });
+    }
+  });
+
+  document.getElementById('welcomeScreen').classList.add('active');
+}
+</script>
+</body>
+</html>

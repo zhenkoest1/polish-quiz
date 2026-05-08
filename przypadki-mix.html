@@ -1,0 +1,984 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Przypadki Mix — Biernik · Narzędnik · Celownik · Dopełniacz</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #1a1a2e;
+  --card: #16213e;
+  --card-hover: #1a2745;
+  --text: #e8e8e8;
+  --text-dim: #8899aa;
+  --accent: #fdcb6e;
+  --correct: #00b894;
+  --incorrect: #e17055;
+  --correct-bg: rgba(0, 184, 148, 0.15);
+  --incorrect-bg: rgba(225, 112, 85, 0.15);
+  --progress-bg: #0f3460;
+  --border: rgba(255,255,255,0.06);
+  --shadow: 0 4px 24px rgba(0,0,0,0.3);
+  --radius: 12px;
+}
+
+html { font-size: 16px; }
+
+body {
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100dvh;
+  line-height: 1.5;
+  -webkit-tap-highlight-color: transparent;
+  overflow-x: hidden;
+}
+
+/* Progress bar */
+.progress-container {
+  position: fixed; top: 0; left: 0; right: 0;
+  height: 4px; background: var(--progress-bg); z-index: 100;
+}
+.progress-bar {
+  height: 100%; background: var(--accent);
+  transition: width 0.4s ease; width: 0%;
+}
+
+/* Timer */
+.timer {
+  position: fixed; top: 8px; right: 12px; z-index: 101;
+  font-size: 0.8rem; color: var(--text-dim);
+  background: rgba(22, 33, 62, 0.9); padding: 4px 10px;
+  border-radius: 20px; backdrop-filter: blur(4px);
+}
+
+/* Main container */
+.container {
+  max-width: 540px; margin: 0 auto;
+  padding: 24px 16px 40px; min-height: 100dvh;
+}
+
+/* Screens */
+.screen { display: none; animation: fadeIn 0.35s ease; }
+.screen.active { display: block; }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Welcome */
+.welcome { text-align: center; padding-top: 15vh; }
+.welcome h1 { font-size: 1.8rem; margin-bottom: 8px; }
+.welcome .subtitle { color: var(--accent); font-size: 1.05rem; margin-bottom: 24px; }
+.welcome .desc { color: var(--text-dim); font-size: 0.95rem; margin-bottom: 32px; line-height: 1.6; }
+.welcome .time-hint { color: var(--text-dim); font-size: 0.85rem; margin-bottom: 28px; }
+
+/* Buttons */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: 14px 32px; border: none; border-radius: var(--radius);
+  font-size: 1.05rem; font-weight: 600; cursor: pointer;
+  transition: all 0.2s ease; min-height: 48px;
+  -webkit-user-select: none; user-select: none;
+}
+.btn-primary {
+  background: var(--accent); color: #1a1a2e;
+}
+.btn-primary:active { transform: scale(0.97); filter: brightness(0.9); }
+.btn-next {
+  background: var(--accent); color: #1a1a2e;
+  width: 100%; margin-top: 16px;
+}
+.btn-next:disabled {
+  background: #3a3a5e; color: #666; cursor: not-allowed;
+}
+.btn-tf {
+  flex: 1; padding: 14px 20px; border: 2px solid var(--border);
+  background: var(--card); color: var(--text); border-radius: var(--radius);
+  font-size: 1rem; font-weight: 600; cursor: pointer;
+  transition: all 0.2s ease; min-height: 52px;
+}
+.btn-tf:active { transform: scale(0.97); }
+.btn-tf.selected-correct {
+  border-color: var(--correct); background: var(--correct-bg); color: var(--correct);
+}
+.btn-tf.selected-incorrect {
+  border-color: var(--incorrect); background: var(--incorrect-bg); color: var(--incorrect);
+}
+.btn-tf.reveal-correct {
+  border-color: var(--correct); background: var(--correct-bg); color: var(--correct);
+}
+.btn-tf:disabled { cursor: not-allowed; opacity: 0.7; }
+
+/* Section header */
+.section-header {
+  text-align: center; padding: 32px 0 20px;
+}
+.section-header .emoji { font-size: 2rem; margin-bottom: 8px; }
+.section-header h2 { font-size: 1.3rem; color: var(--accent); margin-bottom: 4px; }
+.section-header .section-desc { color: var(--text-dim); font-size: 0.88rem; }
+.section-header .section-count {
+  display: inline-block; margin-top: 10px; padding: 4px 14px;
+  background: rgba(253,203,110,0.1); border-radius: 20px;
+  font-size: 0.8rem; color: var(--accent);
+}
+
+/* Question card */
+.question-card {
+  background: var(--card); border-radius: var(--radius);
+  padding: 24px 20px; box-shadow: var(--shadow);
+  border: 1px solid var(--border);
+}
+.q-counter {
+  font-size: 0.8rem; color: var(--text-dim); margin-bottom: 12px;
+}
+.q-prompt {
+  font-size: 1.15rem; font-weight: 600; margin-bottom: 20px; line-height: 1.45;
+}
+.q-prompt .highlight {
+  color: var(--accent); background: rgba(253,203,110,0.1);
+  padding: 2px 6px; border-radius: 4px;
+}
+.q-prompt .gap {
+  display: inline-block; min-width: 100px; border-bottom: 2px dashed var(--accent);
+  margin: 0 2px;
+}
+
+/* Multiple choice options */
+.options { display: flex; flex-direction: column; gap: 10px; }
+.option {
+  display: block; width: 100%; padding: 14px 16px;
+  background: rgba(255,255,255,0.03); border: 2px solid var(--border);
+  border-radius: var(--radius); color: var(--text);
+  font-size: 1rem; text-align: left; cursor: pointer;
+  transition: all 0.2s ease; min-height: 48px;
+  -webkit-user-select: none; user-select: none;
+}
+.option:active { transform: scale(0.98); }
+.option.selected-correct {
+  border-color: var(--correct); background: var(--correct-bg);
+  color: var(--correct); font-weight: 600;
+}
+.option.selected-incorrect {
+  border-color: var(--incorrect); background: var(--incorrect-bg);
+  color: var(--incorrect);
+  animation: shake 0.4s ease;
+}
+.option.reveal-correct {
+  border-color: var(--correct); background: var(--correct-bg);
+  color: var(--correct); font-weight: 600;
+}
+.option:disabled { cursor: not-allowed; }
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-6px); }
+  40% { transform: translateX(6px); }
+  60% { transform: translateX(-4px); }
+  80% { transform: translateX(4px); }
+}
+
+/* Correct flash */
+@keyframes correctFlash {
+  0% { box-shadow: 0 0 0 0 rgba(0,184,148,0.4); }
+  50% { box-shadow: 0 0 20px 4px rgba(0,184,148,0.2); }
+  100% { box-shadow: 0 0 0 0 rgba(0,184,148,0); }
+}
+.flash-correct { animation: correctFlash 0.6s ease; }
+
+/* Type-in input */
+.type-in-wrapper { margin-top: 4px; }
+.type-in {
+  width: 100%; padding: 14px 16px;
+  background: rgba(255,255,255,0.05); border: 2px solid var(--border);
+  border-radius: var(--radius); color: var(--text);
+  font-size: 1.05rem; outline: none;
+  transition: border-color 0.2s;
+}
+.type-in:focus { border-color: var(--accent); }
+.type-in.correct { border-color: var(--correct); background: var(--correct-bg); }
+.type-in.incorrect { border-color: var(--incorrect); background: var(--incorrect-bg); }
+.type-in:disabled { opacity: 0.7; }
+
+.btn-check {
+  width: 100%; margin-top: 10px; padding: 14px;
+  background: var(--accent); color: #1a1a2e; border: none;
+  border-radius: var(--radius); font-size: 1rem; font-weight: 600;
+  cursor: pointer; min-height: 48px;
+}
+.btn-check:active { transform: scale(0.97); }
+
+/* Feedback */
+.feedback {
+  margin-top: 14px; padding: 12px 16px;
+  border-radius: var(--radius); font-size: 0.9rem; line-height: 1.5;
+  display: none;
+}
+.feedback.show { display: block; animation: fadeIn 0.3s ease; }
+.feedback.correct-fb {
+  background: var(--correct-bg); border-left: 3px solid var(--correct); color: var(--correct);
+}
+.feedback.incorrect-fb {
+  background: var(--incorrect-bg); border-left: 3px solid var(--incorrect); color: #f0a090;
+}
+
+/* True/False buttons row */
+.tf-row { display: flex; gap: 12px; }
+
+/* Results */
+.results { text-align: center; padding-top: 8vh; }
+.results .grade-emoji { font-size: 3.5rem; margin-bottom: 12px; }
+.results .grade-label { font-size: 1.5rem; font-weight: 700; margin-bottom: 4px; }
+.results .score-main {
+  font-size: 2.2rem; font-weight: 800; color: var(--accent); margin: 12px 0;
+}
+.results .score-pct { font-size: 1rem; color: var(--text-dim); margin-bottom: 28px; }
+
+.section-scores {
+  text-align: left; background: var(--card); border-radius: var(--radius);
+  padding: 20px; margin-bottom: 24px; box-shadow: var(--shadow);
+  border: 1px solid var(--border);
+}
+.section-scores h3 { font-size: 1rem; margin-bottom: 14px; color: var(--accent); }
+.section-score-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 8px 0; border-bottom: 1px solid var(--border);
+  font-size: 0.9rem;
+}
+.section-score-row:last-child { border-bottom: none; }
+.section-score-row .name { flex: 1; }
+.section-score-row .score {
+  font-weight: 700; min-width: 60px; text-align: right;
+}
+.section-score-bar {
+  width: 60px; height: 6px; background: var(--progress-bg);
+  border-radius: 3px; margin-left: 10px; overflow: hidden;
+}
+.section-score-fill {
+  height: 100%; border-radius: 3px;
+  transition: width 0.6s ease;
+}
+
+.results-buttons { display: flex; flex-direction: column; gap: 12px; margin-top: 20px; }
+.btn-share {
+  background: transparent; border: 2px solid var(--accent);
+  color: var(--accent); width: 100%; padding: 14px;
+  border-radius: var(--radius); font-size: 1rem; font-weight: 600;
+  cursor: pointer; min-height: 48px;
+}
+.btn-share:active { transform: scale(0.97); }
+.btn-restart {
+  background: var(--card); border: 2px solid var(--border);
+  color: var(--text); width: 100%; padding: 14px;
+  border-radius: var(--radius); font-size: 1rem; font-weight: 600;
+  cursor: pointer; min-height: 48px;
+}
+.btn-restart:active { transform: scale(0.97); }
+
+.copied-toast {
+  position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+  background: var(--correct); color: #fff; padding: 10px 24px;
+  border-radius: 24px; font-size: 0.9rem; font-weight: 600;
+  opacity: 0; transition: opacity 0.3s; z-index: 200;
+  pointer-events: none;
+}
+.copied-toast.show { opacity: 1; }
+
+.elapsed {
+  color: var(--text-dim); font-size: 0.85rem; margin-bottom: 20px;
+}
+</style>
+</head>
+<body>
+
+<div class="progress-container"><div class="progress-bar" id="progressBar"></div></div>
+<div class="timer" id="timer" style="display:none;">00:00</div>
+<div class="copied-toast" id="copiedToast">Skopiowano!</div>
+
+<div class="container" id="app">
+
+  <!-- Welcome -->
+  <div class="screen active" id="welcomeScreen">
+    <div class="welcome">
+      <h1>&#x1F4D0; Przypadki Mix</h1>
+      <div class="subtitle">Biernik &#x00B7; Narz&#x0119;dnik &#x00B7; Celownik &#x00B7; Dope&#x0142;niacz</div>
+      <div class="desc">
+        48 pyta&#x0144; &#x2014; wszystkie 4 przypadki w jednym te&#x015B;cie.<br>
+        Kt&#x00F3;ry przypadek? Jakie ko&#x0144;c&#x00F3;wki?
+      </div>
+      <div class="time-hint">&#x23F1;&#xFE0F; Szacowany czas: ~15 min</div>
+      <button class="btn btn-primary" onclick="startQuiz()">Zaczynamy!</button>
+    </div>
+  </div>
+
+  <!-- Quiz area (filled dynamically) -->
+  <div class="screen" id="quizScreen"></div>
+
+  <!-- Results -->
+  <div class="screen" id="resultsScreen"></div>
+
+</div>
+
+<script>
+// ===== HELPERS =====
+function shuffle(arr) {
+  var a = arr.slice();
+  for (var i = a.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var tmp = a[i]; a[i] = a[j]; a[j] = tmp;
+  }
+  return a;
+}
+
+function normalize(s) {
+  return s.trim().toLowerCase();
+}
+
+function stripDiacritics(s) {
+  return s
+    .replace(/[ąĄ]/g, 'a')
+    .replace(/[ćĆ]/g, 'c')
+    .replace(/[ęĘ]/g, 'e')
+    .replace(/[łŁ]/g, 'l')
+    .replace(/[ńŃ]/g, 'n')
+    .replace(/[óÓ]/g, 'o')
+    .replace(/[śŚ]/g, 's')
+    .replace(/[źŹ]/g, 'z')
+    .replace(/[żŻ]/g, 'z');
+}
+
+function escapeAttr(s) {
+  return s.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+}
+
+// ===== DATA =====
+
+var sections = [
+  // --- SECTION 1: Który przypadek? ---
+  {
+    id: 's1', emoji: '\u{1F9ED}', title: 'Kt\u00F3ry przypadek?',
+    desc: 'Wybierz poprawny przypadek', type: 'mc', count: 10,
+    questions: shuffle([
+      { q: 'Widz\u0119 <strong>WZORZEC</strong>. \u2014 Jaki to przypadek?', answer: 'Biernik', options: ['Biernik', 'Dope\u0142niacz', 'Narz\u0119dnik', 'Celownik'] },
+      { q: 'Nie widz\u0119 <strong>WZORCA</strong>. \u2014 Jaki to przypadek?', answer: 'Dope\u0142niacz', options: ['Biernik', 'Dope\u0142niacz', 'Narz\u0119dnik', 'Celownik'] },
+      { q: 'Zarz\u0105dzam <strong>FIRM\u0104</strong>. \u2014 Jaki to przypadek?', answer: 'Narz\u0119dnik', options: ['Biernik', 'Dope\u0142niacz', 'Narz\u0119dnik', 'Celownik'] },
+      { q: 'Pomagam <strong>BRATU</strong>. \u2014 Jaki to przypadek?', answer: 'Celownik', options: ['Biernik', 'Dope\u0142niacz', 'Narz\u0119dnik', 'Celownik'] },
+      { q: 'Bez <strong>KRYZYSU</strong> nie ma zmian.', answer: 'Dope\u0142niacz', options: ['Biernik', 'Dope\u0142niacz', 'Narz\u0119dnik', 'Celownik'] },
+      { q: 'Jestem <strong>LIDEREM</strong>. \u2014 Jaki to przypadek?', answer: 'Narz\u0119dnik', options: ['Biernik', 'Dope\u0142niacz', 'Narz\u0119dnik', 'Celownik'] },
+      { q: 'Kupuj\u0119 <strong>KSI\u0104\u017BK\u0118</strong>. \u2014 Jaki to przypadek?', answer: 'Biernik', options: ['Biernik', 'Dope\u0142niacz', 'Narz\u0119dnik', 'Celownik'] },
+      { q: 'Dzi\u0119kuj\u0119 <strong>NAUCZYCIELOWI</strong>. \u2014 Jaki to przypadek?', answer: 'Celownik', options: ['Biernik', 'Dope\u0142niacz', 'Narz\u0119dnik', 'Celownik'] },
+      { q: 'Du\u017Co <strong>PIENI\u0118DZY</strong>. \u2014 Jaki to przypadek?', answer: 'Dope\u0142niacz', options: ['Biernik', 'Dope\u0142niacz', 'Narz\u0119dnik', 'Celownik'] },
+      { q: 'Interesuj\u0119 si\u0119 <strong>POLITYK\u0104</strong>. \u2014 Jaki to przypadek?', answer: 'Narz\u0119dnik', options: ['Biernik', 'Dope\u0142niacz', 'Narz\u0119dnik', 'Celownik'] },
+      { q: 'M\u00F3wi\u0119 <strong>CI</strong> prawd\u0119. \u2014 Jaki to przypadek?', answer: 'Celownik', options: ['Biernik', 'Dope\u0142niacz', 'Narz\u0119dnik', 'Celownik'] },
+      { q: 'Czytam <strong>GAZET\u0118</strong>. \u2014 Jaki to przypadek?', answer: 'Biernik', options: ['Biernik', 'Dope\u0142niacz', 'Narz\u0119dnik', 'Celownik'] }
+    ]).slice(0, 10)
+  },
+
+  // --- SECTION 2: Biernik — wstaw formę ---
+  {
+    id: 's2', emoji: '\u{1F3AF}', title: 'Biernik \u2014 wstaw form\u0119',
+    desc: 'Wpisz poprawn\u0105 form\u0119 biernika',
+    type: 'typein_sentence', count: 8,
+    questions: shuffle([
+      { q: 'Mam __________ (nowa praca).', answer: 'now\u0105 prac\u0119', hint: '\u017Be\u0144ski: -a\u2192-\u0119, przymiotnik: -a\u2192-\u0105' },
+      { q: 'Widz\u0119 __________ (stary dom).', answer: 'stary dom', hint: 'M\u0119ski nie\u017Cywotny: biernik = mianownik' },
+      { q: 'Znam __________ (dobry lider).', answer: 'dobrego lidera', hint: 'M\u0119ski \u017Cywotny: biernik = dope\u0142niacz (-ego, -a)' },
+      { q: 'Kupuj\u0119 __________ (polska ksi\u0105\u017Cka).', answer: 'polsk\u0105 ksi\u0105\u017Ck\u0119', hint: '\u017Be\u0144ski: -a\u2192-\u0119, przymiotnik: -a\u2192-\u0105' },
+      { q: 'Ogl\u0105dam __________ (interesuj\u0105cy film).', answer: 'interesuj\u0105cy film', hint: 'M\u0119ski nie\u017Cywotny: biernik = mianownik' },
+      { q: 'Lubi\u0119 __________ (gor\u0105ca kawa).', answer: 'gor\u0105c\u0105 kaw\u0119', hint: '\u017Be\u0144ski: -a\u2192-\u0119, przymiotnik: -a\u2192-\u0105' },
+      { q: 'Szukam __________ (nowe rozwi\u0105zanie).', answer: 'nowego rozwi\u0105zania', hint: 'Szuka\u0107 + DOPE\u0141NIACZ! Nijaki: -e\u2192-a, przymiotnik: -e\u2192-ego' },
+      { q: 'Robi\u0119 __________ (kolejny projekt).', answer: 'kolejny projekt', hint: 'M\u0119ski nie\u017Cywotny: biernik = mianownik' },
+      { q: 'Widz\u0119 __________ (pi\u0119kna kobieta).', answer: 'pi\u0119kn\u0105 kobiet\u0119', hint: '\u017Be\u0144ski: -a\u2192-\u0119, przymiotnik: -a\u2192-\u0105' },
+      { q: 'Mam __________ (dobry pomys\u0142).', answer: 'dobry pomys\u0142', hint: 'M\u0119ski nie\u017Cywotny: biernik = mianownik' }
+    ]).slice(0, 8)
+  },
+
+  // --- SECTION 3: Narzędnik — wstaw formę ---
+  {
+    id: 's3', emoji: '\u{1F6E0}\uFE0F', title: 'Narz\u0119dnik \u2014 wstaw form\u0119',
+    desc: 'Wpisz poprawn\u0105 form\u0119 narz\u0119dnika',
+    type: 'typein_sentence', count: 8,
+    questions: shuffle([
+      { q: 'Jestem __________ (student).', answer: 'studentem', hint: 'M\u0119ski: + -em' },
+      { q: 'Interesuj\u0119 si\u0119 __________ (polityka).', answer: 'polityk\u0105', hint: '\u017Be\u0144ski: -a \u2192 -\u0105' },
+      { q: 'Jad\u0119 __________ (samoch\u00F3d).', answer: 'samochodem', hint: 'M\u0119ski: + -em' },
+      { q: 'Zarz\u0105dzam __________ (organizacja).', answer: 'organizacj\u0105', hint: '\u017Be\u0144ski: -a \u2192 -\u0105' },
+      { q: 'Pisz\u0119 __________ (d\u0142ugopis).', answer: 'd\u0142ugopisem', hint: 'M\u0119ski: + -em' },
+      { q: 'Michels by\u0142 __________ (socjolog).', answer: 'socjologiem', hint: 'M\u0119ski: + -iem (po g)' },
+      { q: 'Han jest __________ (filozof).', answer: 'filozofem', hint: 'M\u0119ski: + -em' },
+      { q: 'Demokracja jest __________ (proces).', answer: 'procesem', hint: 'M\u0119ski: + -em' },
+      { q: 'Je\u017Cd\u017C\u0119 __________ (rower).', answer: 'rowerem', hint: 'M\u0119ski: + -em' },
+      { q: 'Organizacja staje si\u0119 __________ (oligarchia).', answer: 'oligarchi\u0105', hint: '\u017Be\u0144ski: -a \u2192 -\u0105' }
+    ]).slice(0, 8)
+  },
+
+  // --- SECTION 4: Celownik — wstaw formę ---
+  {
+    id: 's4', emoji: '\u{1F4EC}', title: 'Celownik \u2014 wstaw form\u0119',
+    desc: 'Wpisz poprawn\u0105 form\u0119 celownika',
+    type: 'typein_sentence', count: 8,
+    questions: shuffle([
+      { q: 'Pomagam __________ (brat).', answer: 'bratu', hint: 'Wyj\u0105tek! brat \u2192 bratu (-u)' },
+      { q: 'Dzi\u0119kuj\u0119 __________ (nauczyciel).', answer: 'nauczycielowi', hint: 'M\u0119ski: + -owi' },
+      { q: 'M\u00F3wi\u0119 prawd\u0119 __________ (mama).', answer: 'mamie', hint: '\u017Be\u0144ski: mama \u2192 mamie (m\u2192mi)' },
+      { q: 'Ufam __________ (ty).', answer: ['ci', 'tobie'], hint: 'ty \u2192 ci (kr\u00F3tka) / tobie (d\u0142uga)' },
+      { q: 'Nie przeszkadzaj __________ (siostra)!', answer: 'siostrze', hint: '\u017Be\u0144ski: siostra \u2192 siostrze (r\u2192rz)' },
+      { q: 'Wybaczam __________ (on).', answer: ['mu', 'jemu'], hint: 'on \u2192 mu (kr\u00F3tka) / jemu (d\u0142uga)' },
+      { q: 'Pomagamy __________ (dziecko).', answer: 'dziecku', hint: 'Nijaki: dziecko \u2192 dziecku (-u)' },
+      { q: 'Trzeba pom\u00F3c __________ (kolega).', answer: 'koledze', hint: 'M\u0119ski na -a: kolega \u2192 koledze (g\u2192dz)' },
+      { q: 'Wierz\u0119 __________ (przyjaciel).', answer: 'przyjacielowi', hint: 'M\u0119ski: + -owi' },
+      { q: 'S\u0142u\u017C\u0119 __________ (ojczyzna).', answer: 'ojczy\u017Anie', hint: '\u017Be\u0144ski: ojczyzna \u2192 ojczy\u017Anie' }
+    ]).slice(0, 8)
+  },
+
+  // --- SECTION 5: Dopełniacz — wstaw formę ---
+  {
+    id: 's5', emoji: '\u26D4', title: 'Dope\u0142niacz \u2014 wstaw form\u0119',
+    desc: 'Wpisz poprawn\u0105 form\u0119 dope\u0142niacza',
+    type: 'typein_sentence', count: 8,
+    questions: shuffle([
+      { q: 'Bez __________ (kryzys) nie ma zmian.', answer: 'kryzysu', hint: 'M\u0119ski: -u' },
+      { q: 'Nie mam __________ (czas).', answer: 'czasu', hint: 'M\u0119ski: -u' },
+      { q: 'Brak __________ (zaufanie) do instytucji.', answer: 'zaufania', hint: 'Nijaki: -e \u2192 -a' },
+      { q: 'Szukam __________ (praca).', answer: 'pracy', hint: '\u017Be\u0144ski: praca \u2192 pracy (-y)' },
+      { q: 'Podczas __________ (pandemia) zamkn\u0119li szko\u0142y.', answer: 'pandemii', hint: '\u017Be\u0144ski na -ia: -ii' },
+      { q: 'Upadek __________ (imperium).', answer: 'imperium', hint: 'Nijaki na -um: nie zmienia si\u0119!' },
+      { q: 'Du\u017Co __________ (pieni\u0105dze).', answer: 'pieni\u0119dzy', hint: 'Nieregularne!' },
+      { q: 'Nie widz\u0119 __________ (problem).', answer: 'problemu', hint: 'M\u0119ski: -u' },
+      { q: 'Historia __________ (imperia).', answer: 'imperi\u00F3w', hint: 'L.mn.: -\u00F3w' },
+      { q: 'Dla __________ (moja siostra) to wa\u017Cne.', answer: 'mojej siostry', hint: '\u017Be\u0144ski: siostra\u2192siostry, moja\u2192mojej' }
+    ]).slice(0, 8)
+  },
+
+  // --- SECTION 6: Mix — który przypadek i jaka forma? ---
+  {
+    id: 's6', emoji: '\u{1F9E9}', title: 'Mix \u2014 kt\u00F3ry przypadek i jaka forma?',
+    desc: 'Wpisz poprawn\u0105 form\u0119 \u2014 uwaga na przypadek!',
+    type: 'typein_sentence', count: 6,
+    questions: [
+      { q: 'Widz\u0119 __________ (ten dom). [Biernik]', answer: 'ten dom', hint: 'M\u0119ski nie\u017Cywotny biernik = mianownik' },
+      { q: 'Nie widz\u0119 __________ (ten dom). [Dope\u0142niacz]', answer: 'tego domu', hint: 'Negacja \u2192 dope\u0142niacz! dom\u2192domu, ten\u2192tego' },
+      { q: 'Interesuj\u0119 si\u0119 __________ (ten dom). [Narz\u0119dnik]', answer: 'tym domem', hint: 'Narz\u0119dnik: dom\u2192domem, ten\u2192tym' },
+      { q: 'Dzi\u0119kuj\u0119 __________ (ten nauczyciel). [Celownik]', answer: 'temu nauczycielowi', hint: 'Celownik: +owi, ten\u2192temu' },
+      { q: 'Nie mam __________ (ten telefon). [Dope\u0142niacz]', answer: 'tego telefonu', hint: 'Dope\u0142niacz: telefon\u2192telefonu, ten\u2192tego' },
+      { q: 'Jestem __________ (nauczyciel). [Narz\u0119dnik]', answer: 'nauczycielem', hint: 'Narz\u0119dnik: + -em' }
+    ]
+  }
+];
+
+// ===== STATE =====
+var currentSection = 0;
+var currentQuestion = 0;
+var sectionScores = [];
+var totalCorrect = 0;
+var totalQuestions = 0;
+var startTime = null;
+var timerInterval = null;
+var answered = false;
+var flatIndex = 0;
+var currentQData = null;
+
+// ===== ENGINE HELPERS =====
+
+function getTotalQ() {
+  return sections.reduce(function(s, sec) { return s + sec.questions.length; }, 0);
+}
+
+function updateProgress() {
+  var total = getTotalQ();
+  var pct = (flatIndex / total) * 100;
+  document.getElementById('progressBar').style.width = pct + '%';
+}
+
+function startTimer() {
+  startTime = Date.now();
+  var el = document.getElementById('timer');
+  el.style.display = 'block';
+  timerInterval = setInterval(function() {
+    var diff = Date.now() - startTime;
+    var m = Math.floor(diff / 60000);
+    var s = Math.floor((diff % 60000) / 1000);
+    el.textContent = String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+  }, 1000);
+}
+
+function stopTimer() {
+  clearInterval(timerInterval);
+}
+
+function getElapsed() {
+  if (!startTime) return '00:00';
+  var diff = Date.now() - startTime;
+  var m = Math.floor(diff / 60000);
+  var s = Math.floor((diff % 60000) / 1000);
+  return String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+}
+
+// ===== QUIZ ENGINE =====
+
+function startQuiz() {
+  // Shuffle options for MC questions
+  sections.forEach(function(sec) {
+    if (sec.type === 'mc') {
+      sec.questions.forEach(function(q) { q.options = shuffle(q.options); });
+    }
+  });
+
+  currentSection = 0;
+  currentQuestion = 0;
+  sectionScores = sections.map(function() { return { correct: 0, total: 0 }; });
+  totalCorrect = 0;
+  flatIndex = 0;
+  totalQuestions = getTotalQ();
+  answered = false;
+  currentQData = null;
+
+  document.getElementById('welcomeScreen').classList.remove('active');
+  document.getElementById('quizScreen').classList.add('active');
+  startTimer();
+  renderSectionIntro();
+}
+
+function renderSectionIntro() {
+  var sec = sections[currentSection];
+  var area = document.getElementById('quizScreen');
+  area.innerHTML =
+    '<div class="section-header">' +
+      '<div class="emoji">' + sec.emoji + '</div>' +
+      '<h2>' + sec.title + '</h2>' +
+      '<div class="section-desc">' + sec.desc + '</div>' +
+      '<div class="section-count">Sekcja ' + (currentSection + 1) + ' / ' + sections.length + ' \u2014 ' + sec.questions.length + ' pyta\u0144</div>' +
+    '</div>' +
+    '<button class="btn btn-next" onclick="renderQuestion()" style="margin-top:20px;">Start \u27A1\uFE0F</button>';
+  updateProgress();
+}
+
+function renderQuestion() {
+  var sec = sections[currentSection];
+  var q = sec.questions[currentQuestion];
+  answered = false;
+  currentQData = null;
+  var area = document.getElementById('quizScreen');
+  var qNum = currentQuestion + 1;
+  var qTotal = sec.questions.length;
+
+  if (sec.type === 'mc') {
+    renderMC(area, sec, q, qNum, qTotal);
+  } else if (sec.type === 'typein') {
+    renderTypeIn(area, sec, q, qNum, qTotal);
+  } else if (sec.type === 'typein_sentence') {
+    renderTypeInSentence(area, sec, q, qNum, qTotal);
+  } else if (sec.type === 'tf') {
+    renderTF(area, sec, q, qNum, qTotal);
+  }
+  updateProgress();
+}
+
+function renderMC(area, sec, q, qNum, qTotal) {
+  var promptHTML;
+  // For fill-in-the-blank style questions (contain __________)
+  if (q.q.indexOf('__________') !== -1) {
+    promptHTML = q.q.replace('__________', '<span class="gap">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>');
+  } else {
+    // For translation / definition style — highlight the word/definition
+    promptHTML = '<span class="highlight">' + q.q + '</span>';
+  }
+
+  var optionsHTML = '';
+  for (var i = 0; i < q.options.length; i++) {
+    optionsHTML += '<button class="option" data-idx="' + i + '" onclick="selectMC(this, \'' + escapeAttr(q.options[i]) + '\', \'' + escapeAttr(q.answer) + '\')">' + q.options[i] + '</button>';
+  }
+
+  area.innerHTML =
+    '<div class="section-header" style="padding-top:16px;padding-bottom:10px;">' +
+      '<h2 style="font-size:1rem;">' + sec.emoji + ' ' + sec.title + '</h2>' +
+    '</div>' +
+    '<div class="question-card">' +
+      '<div class="q-counter">Pytanie ' + qNum + ' / ' + qTotal + '</div>' +
+      '<div class="q-prompt">' + promptHTML + '</div>' +
+      '<div class="options">' + optionsHTML + '</div>' +
+      '<div class="feedback" id="feedback"></div>' +
+    '</div>' +
+    '<button class="btn btn-next" id="btnNext" disabled onclick="nextQuestion()">Dalej \u27A1\uFE0F</button>';
+}
+
+function selectMC(btn, selected, correct) {
+  if (answered) return;
+  answered = true;
+  var options = document.querySelectorAll('.option');
+  options.forEach(function(o) { o.disabled = true; });
+
+  var isCorrect = selected === correct;
+  if (isCorrect) {
+    btn.classList.add('selected-correct');
+    btn.closest('.question-card').classList.add('flash-correct');
+    showFeedback(true, '');
+    recordAnswer(true);
+  } else {
+    btn.classList.add('selected-incorrect');
+    options.forEach(function(o) {
+      if (o.textContent === correct) o.classList.add('reveal-correct');
+    });
+    showFeedback(false, 'Poprawna odpowied\u017A: <strong>' + correct + '</strong>');
+    recordAnswer(false);
+  }
+  document.getElementById('btnNext').disabled = false;
+}
+
+function renderTypeIn(area, sec, q, qNum, qTotal) {
+  currentQData = q;
+  var promptHTML;
+  if (sec.prompt) {
+    promptHTML = sec.prompt.replace('{word}', '<span class="highlight">' + q.q + '</span>');
+  } else {
+    promptHTML = 'Wpisz odpowied\u017A dla: <span class="highlight">' + q.q + '</span>';
+  }
+
+  area.innerHTML =
+    '<div class="section-header" style="padding-top:16px;padding-bottom:10px;">' +
+      '<h2 style="font-size:1rem;">' + sec.emoji + ' ' + sec.title + '</h2>' +
+    '</div>' +
+    '<div class="question-card">' +
+      '<div class="q-counter">Pytanie ' + qNum + ' / ' + qTotal + '</div>' +
+      '<div class="q-prompt">' + promptHTML + '</div>' +
+      '<div class="type-in-wrapper">' +
+        '<input type="text" class="type-in" id="typeInput" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Twoja odpowied\u017A...">' +
+        '<button class="btn-check" id="btnCheck" onclick="checkCurrentAnswer()">Sprawd\u017A</button>' +
+      '</div>' +
+      '<div class="feedback" id="feedback"></div>' +
+    '</div>' +
+    '<button class="btn btn-next" id="btnNext" disabled onclick="nextQuestion()">Dalej \u27A1\uFE0F</button>';
+
+  var input = document.getElementById('typeInput');
+  input.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' && !answered) {
+      document.getElementById('btnCheck').click();
+    }
+  });
+  input.focus();
+}
+
+function renderTypeInSentence(area, sec, q, qNum, qTotal) {
+  currentQData = q;
+  var promptHTML = q.q.replace('__________', '<span class="gap">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>');
+
+  area.innerHTML =
+    '<div class="section-header" style="padding-top:16px;padding-bottom:10px;">' +
+      '<h2 style="font-size:1rem;">' + sec.emoji + ' ' + sec.title + '</h2>' +
+    '</div>' +
+    '<div class="question-card">' +
+      '<div class="q-counter">Pytanie ' + qNum + ' / ' + qTotal + '</div>' +
+      '<div class="q-prompt">' + promptHTML + '</div>' +
+      '<div class="type-in-wrapper">' +
+        '<input type="text" class="type-in" id="typeInput" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Twoja odpowied\u017A...">' +
+        '<button class="btn-check" id="btnCheck" onclick="checkCurrentAnswer()">Sprawd\u017A</button>' +
+      '</div>' +
+      '<div class="feedback" id="feedback"></div>' +
+    '</div>' +
+    '<button class="btn btn-next" id="btnNext" disabled onclick="nextQuestion()">Dalej \u27A1\uFE0F</button>';
+
+  var input = document.getElementById('typeInput');
+  input.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' && !answered) {
+      document.getElementById('btnCheck').click();
+    }
+  });
+  input.focus();
+}
+
+function checkCurrentAnswer() {
+  if (answered) return;
+  answered = true;
+  var q = currentQData;
+  var input = document.getElementById('typeInput');
+  var val = input.value;
+  var correct = q.answer;
+  var displayAnswer = Array.isArray(correct) ? correct[0] : correct;
+  var hint = q.hint || '';
+
+  var isRight = Array.isArray(correct)
+    ? correct.some(function(a) { return normalize(val) === normalize(a); })
+    : normalize(val) === normalize(correct);
+
+  var isAlmost = !isRight && (Array.isArray(correct)
+    ? correct.some(function(a) { return stripDiacritics(normalize(val)) === stripDiacritics(normalize(a)); })
+    : stripDiacritics(normalize(val)) === stripDiacritics(normalize(correct)));
+
+  input.disabled = true;
+  document.getElementById('btnCheck').style.display = 'none';
+
+  if (isRight) {
+    input.classList.add('correct');
+    input.closest('.question-card').classList.add('flash-correct');
+    showFeedback(true, hint ? '\u{1F4A1} ' + hint : '');
+    recordAnswer(true);
+  } else if (isAlmost) {
+    input.classList.add('incorrect');
+    showFeedback(false, 'Prawie! Pami\u0119taj o polskich znakach: <strong>' + displayAnswer + '</strong>' + (hint ? '<br>\u{1F4A1} ' + hint : ''));
+    recordAnswer(false);
+  } else {
+    input.classList.add('incorrect');
+    showFeedback(false, 'Poprawna odpowied\u017A: <strong>' + displayAnswer + '</strong>' + (hint ? '<br>\u{1F4A1} ' + hint : ''));
+    recordAnswer(false);
+  }
+  document.getElementById('btnNext').disabled = false;
+}
+
+function renderTF(area, sec, q, qNum, qTotal) {
+  area.innerHTML =
+    '<div class="section-header" style="padding-top:16px;padding-bottom:10px;">' +
+      '<h2 style="font-size:1rem;">' + sec.emoji + ' ' + sec.title + '</h2>' +
+    '</div>' +
+    '<div class="question-card">' +
+      '<div class="q-counter">Pytanie ' + qNum + ' / ' + qTotal + '</div>' +
+      '<div class="q-prompt">\u00AB' + q.q + '\u00BB</div>' +
+      '<div class="tf-row">' +
+        '<button class="btn-tf" onclick="selectTF(this, true, ' + q.answer + ', \'' + escapeAttr(q.explanation) + '\')">\u2705 PRAWDA</button>' +
+        '<button class="btn-tf" onclick="selectTF(this, false, ' + q.answer + ', \'' + escapeAttr(q.explanation) + '\')">\u274C FA\u0141SZ</button>' +
+      '</div>' +
+      '<div class="feedback" id="feedback"></div>' +
+    '</div>' +
+    '<button class="btn btn-next" id="btnNext" disabled onclick="nextQuestion()">Dalej \u27A1\uFE0F</button>';
+}
+
+function selectTF(btn, selected, correct, explanation) {
+  if (answered) return;
+  answered = true;
+  var buttons = document.querySelectorAll('.btn-tf');
+  buttons.forEach(function(b) { b.disabled = true; });
+
+  var isCorrect = selected === correct;
+  if (isCorrect) {
+    btn.classList.add('selected-correct');
+    btn.closest('.question-card').classList.add('flash-correct');
+    showFeedback(true, explanation);
+    recordAnswer(true);
+  } else {
+    btn.classList.add('selected-incorrect');
+    buttons.forEach(function(b) {
+      var bVal = b.textContent.indexOf('PRAWDA') !== -1;
+      if (bVal === correct) b.classList.add('reveal-correct');
+    });
+    showFeedback(false, explanation);
+    recordAnswer(false);
+  }
+  document.getElementById('btnNext').disabled = false;
+}
+
+function showFeedback(isCorrect, msg) {
+  var fb = document.getElementById('feedback');
+  fb.className = 'feedback show ' + (isCorrect ? 'correct-fb' : 'incorrect-fb');
+  fb.innerHTML = (isCorrect ? '\u2705 Dobrze!' : '\u274C Niestety...') + (msg ? '<br>' + msg : '');
+}
+
+function recordAnswer(isCorrect) {
+  sectionScores[currentSection].total++;
+  if (isCorrect) {
+    sectionScores[currentSection].correct++;
+    totalCorrect++;
+  }
+  flatIndex++;
+}
+
+function nextQuestion() {
+  var sec = sections[currentSection];
+  currentQuestion++;
+  if (currentQuestion >= sec.questions.length) {
+    currentSection++;
+    currentQuestion = 0;
+    if (currentSection >= sections.length) {
+      showResults();
+      return;
+    }
+    renderSectionIntro();
+  } else {
+    renderQuestion();
+  }
+}
+
+// ===== RESULTS =====
+
+function showResults() {
+  stopTimer();
+  var elapsed = getElapsed();
+  var total = getTotalQ();
+  var pct = Math.round((totalCorrect / total) * 100);
+
+  var emoji, label;
+  if (pct >= 90) { emoji = '\u{1F3C6}'; label = 'Mistrz!'; }
+  else if (pct >= 70) { emoji = '\u{1F4AA}'; label = 'Bardzo dobrze!'; }
+  else if (pct >= 50) { emoji = '\u{1F4DA}'; label = 'Trzeba powt\u00F3rzy\u0107'; }
+  else { emoji = '\u{1F504}'; label = 'Powt\u00F3rz lekcj\u0119'; }
+
+  document.getElementById('progressBar').style.width = '100%';
+  document.getElementById('quizScreen').classList.remove('active');
+  var area = document.getElementById('resultsScreen');
+  area.classList.add('active');
+
+  var rowsHTML = '';
+  for (var i = 0; i < sections.length; i++) {
+    var sec = sections[i];
+    var sc = sectionScores[i];
+    var secPct = sc.total > 0 ? Math.round((sc.correct / sc.total) * 100) : 0;
+    var barColor = secPct >= 70 ? 'var(--correct)' : secPct >= 50 ? 'var(--accent)' : 'var(--incorrect)';
+    rowsHTML +=
+      '<div class="section-score-row">' +
+        '<span class="name">' + sec.emoji + ' ' + sec.title + '</span>' +
+        '<span class="score">' + sc.correct + '/' + sc.total + '</span>' +
+        '<div class="section-score-bar"><div class="section-score-fill" style="width:' + secPct + '%;background:' + barColor + ';"></div></div>' +
+      '</div>';
+  }
+
+  var emojiGrade;
+  if (pct >= 90) emojiGrade = '\u{1F3C6}';
+  else if (pct >= 70) emojiGrade = '\u{1F4AA}';
+  else if (pct >= 50) emojiGrade = '\u{1F4DA}';
+  else emojiGrade = '\u{1F504}';
+
+  area.innerHTML =
+    '<div class="results">' +
+      '<div class="grade-emoji">' + emoji + '</div>' +
+      '<div class="grade-label">' + label + '</div>' +
+      '<div class="score-main">' + totalCorrect + ' / ' + total + '</div>' +
+      '<div class="score-pct">' + pct + '% poprawnych odpowiedzi</div>' +
+      '<div class="elapsed">\u23F1\uFE0F Czas: ' + elapsed + '</div>' +
+      '<div class="section-scores">' +
+        '<h3>Wyniki sekcji</h3>' +
+        rowsHTML +
+      '</div>' +
+      '<div class="results-buttons">' +
+        '<button class="btn-share" onclick="shareResult(' + totalCorrect + ', ' + total + ', ' + pct + ', \'' + emojiGrade + '\')">\u{1F4CB} Podziel si\u0119 wynikiem</button>' +
+        '<button class="btn-restart" onclick="restart()">\u{1F504} Spr\u00F3buj jeszcze raz</button>' +
+      '</div>' +
+    '</div>';
+}
+
+function shareResult(correct, total, pct, emoji) {
+  var text = '\u{1F4D0} Przypadki Mix \u2014 4 przypadki\nM\u00F3j wynik: ' + correct + '/' + total + ' (' + pct + '%)\n' + emoji;
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(function() { showToast(); }).catch(function() { fallbackCopy(text); });
+  } else {
+    fallbackCopy(text);
+  }
+}
+
+function fallbackCopy(text) {
+  var ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.position = 'fixed';
+  ta.style.left = '-9999px';
+  document.body.appendChild(ta);
+  ta.select();
+  try { document.execCommand('copy'); showToast(); } catch(e) {}
+  document.body.removeChild(ta);
+}
+
+function showToast() {
+  var t = document.getElementById('copiedToast');
+  t.classList.add('show');
+  setTimeout(function() { t.classList.remove('show'); }, 2000);
+}
+
+function restart() {
+  document.getElementById('resultsScreen').classList.remove('active');
+  document.getElementById('progressBar').style.width = '0%';
+  document.getElementById('timer').style.display = 'none';
+  stopTimer();
+
+  // Re-shuffle section 0 (MC, pool of 12, pick 10)
+  sections[0].questions = shuffle([
+    { q: 'Widz\u0119 <strong>WZORZEC</strong>. \u2014 Jaki to przypadek?', answer: 'Biernik', options: ['Biernik', 'Dope\u0142niacz', 'Narz\u0119dnik', 'Celownik'] },
+    { q: 'Nie widz\u0119 <strong>WZORCA</strong>. \u2014 Jaki to przypadek?', answer: 'Dope\u0142niacz', options: ['Biernik', 'Dope\u0142niacz', 'Narz\u0119dnik', 'Celownik'] },
+    { q: 'Zarz\u0105dzam <strong>FIRM\u0104</strong>. \u2014 Jaki to przypadek?', answer: 'Narz\u0119dnik', options: ['Biernik', 'Dope\u0142niacz', 'Narz\u0119dnik', 'Celownik'] },
+    { q: 'Pomagam <strong>BRATU</strong>. \u2014 Jaki to przypadek?', answer: 'Celownik', options: ['Biernik', 'Dope\u0142niacz', 'Narz\u0119dnik', 'Celownik'] },
+    { q: 'Bez <strong>KRYZYSU</strong> nie ma zmian.', answer: 'Dope\u0142niacz', options: ['Biernik', 'Dope\u0142niacz', 'Narz\u0119dnik', 'Celownik'] },
+    { q: 'Jestem <strong>LIDEREM</strong>. \u2014 Jaki to przypadek?', answer: 'Narz\u0119dnik', options: ['Biernik', 'Dope\u0142niacz', 'Narz\u0119dnik', 'Celownik'] },
+    { q: 'Kupuj\u0119 <strong>KSI\u0104\u017BK\u0118</strong>. \u2014 Jaki to przypadek?', answer: 'Biernik', options: ['Biernik', 'Dope\u0142niacz', 'Narz\u0119dnik', 'Celownik'] },
+    { q: 'Dzi\u0119kuj\u0119 <strong>NAUCZYCIELOWI</strong>. \u2014 Jaki to przypadek?', answer: 'Celownik', options: ['Biernik', 'Dope\u0142niacz', 'Narz\u0119dnik', 'Celownik'] },
+    { q: 'Du\u017Co <strong>PIENI\u0118DZY</strong>. \u2014 Jaki to przypadek?', answer: 'Dope\u0142niacz', options: ['Biernik', 'Dope\u0142niacz', 'Narz\u0119dnik', 'Celownik'] },
+    { q: 'Interesuj\u0119 si\u0119 <strong>POLITYK\u0104</strong>. \u2014 Jaki to przypadek?', answer: 'Narz\u0119dnik', options: ['Biernik', 'Dope\u0142niacz', 'Narz\u0119dnik', 'Celownik'] },
+    { q: 'M\u00F3wi\u0119 <strong>CI</strong> prawd\u0119. \u2014 Jaki to przypadek?', answer: 'Celownik', options: ['Biernik', 'Dope\u0142niacz', 'Narz\u0119dnik', 'Celownik'] },
+    { q: 'Czytam <strong>GAZET\u0118</strong>. \u2014 Jaki to przypadek?', answer: 'Biernik', options: ['Biernik', 'Dope\u0142niacz', 'Narz\u0119dnik', 'Celownik'] }
+  ]).slice(0, 10);
+
+  // Re-shuffle section 1 (Biernik, pool of 10, pick 8)
+  sections[1].questions = shuffle([
+    { q: 'Mam __________ (nowa praca).', answer: 'now\u0105 prac\u0119', hint: '\u017Be\u0144ski: -a\u2192-\u0119, przymiotnik: -a\u2192-\u0105' },
+    { q: 'Widz\u0119 __________ (stary dom).', answer: 'stary dom', hint: 'M\u0119ski nie\u017Cywotny: biernik = mianownik' },
+    { q: 'Znam __________ (dobry lider).', answer: 'dobrego lidera', hint: 'M\u0119ski \u017Cywotny: biernik = dope\u0142niacz (-ego, -a)' },
+    { q: 'Kupuj\u0119 __________ (polska ksi\u0105\u017Cka).', answer: 'polsk\u0105 ksi\u0105\u017Ck\u0119', hint: '\u017Be\u0144ski: -a\u2192-\u0119, przymiotnik: -a\u2192-\u0105' },
+    { q: 'Ogl\u0105dam __________ (interesuj\u0105cy film).', answer: 'interesuj\u0105cy film', hint: 'M\u0119ski nie\u017Cywotny: biernik = mianownik' },
+    { q: 'Lubi\u0119 __________ (gor\u0105ca kawa).', answer: 'gor\u0105c\u0105 kaw\u0119', hint: '\u017Be\u0144ski: -a\u2192-\u0119, przymiotnik: -a\u2192-\u0105' },
+    { q: 'Szukam __________ (nowe rozwi\u0105zanie).', answer: 'nowego rozwi\u0105zania', hint: 'Szuka\u0107 + DOPE\u0141NIACZ! Nijaki: -e\u2192-a, przymiotnik: -e\u2192-ego' },
+    { q: 'Robi\u0119 __________ (kolejny projekt).', answer: 'kolejny projekt', hint: 'M\u0119ski nie\u017Cywotny: biernik = mianownik' },
+    { q: 'Widz\u0119 __________ (pi\u0119kna kobieta).', answer: 'pi\u0119kn\u0105 kobiet\u0119', hint: '\u017Be\u0144ski: -a\u2192-\u0119, przymiotnik: -a\u2192-\u0105' },
+    { q: 'Mam __________ (dobry pomys\u0142).', answer: 'dobry pomys\u0142', hint: 'M\u0119ski nie\u017Cywotny: biernik = mianownik' }
+  ]).slice(0, 8);
+
+  // Re-shuffle section 2 (Narzędnik, pool of 10, pick 8)
+  sections[2].questions = shuffle([
+    { q: 'Jestem __________ (student).', answer: 'studentem', hint: 'M\u0119ski: + -em' },
+    { q: 'Interesuj\u0119 si\u0119 __________ (polityka).', answer: 'polityk\u0105', hint: '\u017Be\u0144ski: -a \u2192 -\u0105' },
+    { q: 'Jad\u0119 __________ (samoch\u00F3d).', answer: 'samochodem', hint: 'M\u0119ski: + -em' },
+    { q: 'Zarz\u0105dzam __________ (organizacja).', answer: 'organizacj\u0105', hint: '\u017Be\u0144ski: -a \u2192 -\u0105' },
+    { q: 'Pisz\u0119 __________ (d\u0142ugopis).', answer: 'd\u0142ugopisem', hint: 'M\u0119ski: + -em' },
+    { q: 'Michels by\u0142 __________ (socjolog).', answer: 'socjologiem', hint: 'M\u0119ski: + -iem (po g)' },
+    { q: 'Han jest __________ (filozof).', answer: 'filozofem', hint: 'M\u0119ski: + -em' },
+    { q: 'Demokracja jest __________ (proces).', answer: 'procesem', hint: 'M\u0119ski: + -em' },
+    { q: 'Je\u017Cd\u017C\u0119 __________ (rower).', answer: 'rowerem', hint: 'M\u0119ski: + -em' },
+    { q: 'Organizacja staje si\u0119 __________ (oligarchia).', answer: 'oligarchi\u0105', hint: '\u017Be\u0144ski: -a \u2192 -\u0105' }
+  ]).slice(0, 8);
+
+  // Re-shuffle section 3 (Celownik, pool of 10, pick 8)
+  sections[3].questions = shuffle([
+    { q: 'Pomagam __________ (brat).', answer: 'bratu', hint: 'Wyj\u0105tek! brat \u2192 bratu (-u)' },
+    { q: 'Dzi\u0119kuj\u0119 __________ (nauczyciel).', answer: 'nauczycielowi', hint: 'M\u0119ski: + -owi' },
+    { q: 'M\u00F3wi\u0119 prawd\u0119 __________ (mama).', answer: 'mamie', hint: '\u017Be\u0144ski: mama \u2192 mamie (m\u2192mi)' },
+    { q: 'Ufam __________ (ty).', answer: ['ci', 'tobie'], hint: 'ty \u2192 ci (kr\u00F3tka) / tobie (d\u0142uga)' },
+    { q: 'Nie przeszkadzaj __________ (siostra)!', answer: 'siostrze', hint: '\u017Be\u0144ski: siostra \u2192 siostrze (r\u2192rz)' },
+    { q: 'Wybaczam __________ (on).', answer: ['mu', 'jemu'], hint: 'on \u2192 mu (kr\u00F3tka) / jemu (d\u0142uga)' },
+    { q: 'Pomagamy __________ (dziecko).', answer: 'dziecku', hint: 'Nijaki: dziecko \u2192 dziecku (-u)' },
+    { q: 'Trzeba pom\u00F3c __________ (kolega).', answer: 'koledze', hint: 'M\u0119ski na -a: kolega \u2192 koledze (g\u2192dz)' },
+    { q: 'Wierz\u0119 __________ (przyjaciel).', answer: 'przyjacielowi', hint: 'M\u0119ski: + -owi' },
+    { q: 'S\u0142u\u017C\u0119 __________ (ojczyzna).', answer: 'ojczy\u017Anie', hint: '\u017Be\u0144ski: ojczyzna \u2192 ojczy\u017Anie' }
+  ]).slice(0, 8);
+
+  // Re-shuffle section 4 (Dopełniacz, pool of 10, pick 8)
+  sections[4].questions = shuffle([
+    { q: 'Bez __________ (kryzys) nie ma zmian.', answer: 'kryzysu', hint: 'M\u0119ski: -u' },
+    { q: 'Nie mam __________ (czas).', answer: 'czasu', hint: 'M\u0119ski: -u' },
+    { q: 'Brak __________ (zaufanie) do instytucji.', answer: 'zaufania', hint: 'Nijaki: -e \u2192 -a' },
+    { q: 'Szukam __________ (praca).', answer: 'pracy', hint: '\u017Be\u0144ski: praca \u2192 pracy (-y)' },
+    { q: 'Podczas __________ (pandemia) zamkn\u0119li szko\u0142y.', answer: 'pandemii', hint: '\u017Be\u0144ski na -ia: -ii' },
+    { q: 'Upadek __________ (imperium).', answer: 'imperium', hint: 'Nijaki na -um: nie zmienia si\u0119!' },
+    { q: 'Du\u017Co __________ (pieni\u0105dze).', answer: 'pieni\u0119dzy', hint: 'Nieregularne!' },
+    { q: 'Nie widz\u0119 __________ (problem).', answer: 'problemu', hint: 'M\u0119ski: -u' },
+    { q: 'Historia __________ (imperia).', answer: 'imperi\u00F3w', hint: 'L.mn.: -\u00F3w' },
+    { q: 'Dla __________ (moja siostra) to wa\u017Cne.', answer: 'mojej siostry', hint: '\u017Be\u0144ski: siostra\u2192siostry, moja\u2192mojej' }
+  ]).slice(0, 8);
+
+  // Section 5 (Mix, fixed 6 questions) — re-assign
+  sections[5].questions = [
+    { q: 'Widz\u0119 __________ (ten dom). [Biernik]', answer: 'ten dom', hint: 'M\u0119ski nie\u017Cywotny biernik = mianownik' },
+    { q: 'Nie widz\u0119 __________ (ten dom). [Dope\u0142niacz]', answer: 'tego domu', hint: 'Negacja \u2192 dope\u0142niacz! dom\u2192domu, ten\u2192tego' },
+    { q: 'Interesuj\u0119 si\u0119 __________ (ten dom). [Narz\u0119dnik]', answer: 'tym domem', hint: 'Narz\u0119dnik: dom\u2192domem, ten\u2192tym' },
+    { q: 'Dzi\u0119kuj\u0119 __________ (ten nauczyciel). [Celownik]', answer: 'temu nauczycielowi', hint: 'Celownik: +owi, ten\u2192temu' },
+    { q: 'Nie mam __________ (ten telefon). [Dope\u0142niacz]', answer: 'tego telefonu', hint: 'Dope\u0142niacz: telefon\u2192telefonu, ten\u2192tego' },
+    { q: 'Jestem __________ (nauczyciel). [Narz\u0119dnik]', answer: 'nauczycielem', hint: 'Narz\u0119dnik: + -em' }
+  ];
+
+  // Shuffle MC options on restart
+  sections.forEach(function(sec) {
+    if (sec.type === 'mc') {
+      sec.questions.forEach(function(q) { q.options = shuffle(q.options); });
+    }
+  });
+
+  document.getElementById('welcomeScreen').classList.add('active');
+}
+</script>
+</body>
+</html>
